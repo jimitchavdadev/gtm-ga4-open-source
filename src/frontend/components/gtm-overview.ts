@@ -100,22 +100,34 @@ export function renderGtmOverview(): HTMLElement {
 			modalBox.innerHTML = "";
 		});
 
-		modalBox.querySelector("#pub-confirm")?.addEventListener("click", async () => {
-			const nameInput = modalBox.querySelector("#pub-ver-name") as HTMLInputElement;
-			const descInput = modalBox.querySelector("#pub-ver-desc") as HTMLTextAreaElement;
-			const ver = await ApiClient.publishWorkspace(
-				state.workspaceId,
-				state.containerId,
-				nameInput?.value || "Live Release",
-				descInput?.value || "",
-			);
-			modalBox.innerHTML = "";
-			store.setState({ versions: [ver, ...state.versions] });
-			store.notifyUser(`Version ${ver.version_number} successfully published!`, "success");
-		});
+		modalBox
+			.querySelector("#pub-confirm")
+			?.addEventListener("click", async () => {
+				const nameInput = modalBox.querySelector(
+					"#pub-ver-name",
+				) as HTMLInputElement;
+				const descInput = modalBox.querySelector(
+					"#pub-ver-desc",
+				) as HTMLTextAreaElement;
+				const ver = await ApiClient.publishWorkspace(
+					state.workspaceId,
+					state.containerId,
+					nameInput?.value || "Live Release",
+					descInput?.value || "",
+				);
+				modalBox.innerHTML = "";
+				store.setState({ versions: [ver, ...state.versions] });
+				store.notifyUser(
+					`Version ${ver.version_number} successfully published!`,
+					"success",
+				);
+			});
 	};
 
-	el.querySelector("#btn-publish-workspace")?.addEventListener("click", openModal);
+	el.querySelector("#btn-publish-workspace")?.addEventListener(
+		"click",
+		openModal,
+	);
 	window.addEventListener("open-publish-modal", openModal);
 
 	return el;

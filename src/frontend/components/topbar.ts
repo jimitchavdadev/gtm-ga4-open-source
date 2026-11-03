@@ -57,7 +57,10 @@ export function renderTopbar(): HTMLElement {
 
 	el.querySelector("#btn-top-preview")?.addEventListener("click", () => {
 		const active = !store.getState().previewActive;
-		store.setState({ previewActive: active, gtmTab: active ? "PREVIEW" : "OVERVIEW" });
+		store.setState({
+			previewActive: active,
+			gtmTab: active ? "PREVIEW" : "OVERVIEW",
+		});
 		store.notifyUser(
 			active ? "Tag Assistant Preview Mode activated!" : "Preview Mode ended",
 			"info",

@@ -121,11 +121,20 @@ export function renderGtmTags(): HTMLElement {
 		});
 
 		modalBox.querySelector("#tag-save")?.addEventListener("click", async () => {
-			const name = (modalBox.querySelector("#tag-name") as HTMLInputElement).value;
-			const type = (modalBox.querySelector("#tag-type") as HTMLSelectElement).value;
-			const triggerName = (modalBox.querySelector("#tag-trigger") as HTMLSelectElement).value;
-			const priority = Number((modalBox.querySelector("#tag-priority") as HTMLInputElement).value) || 0;
-			const requiredConsent = (modalBox.querySelector("#tag-consent") as HTMLSelectElement).value;
+			const name = (modalBox.querySelector("#tag-name") as HTMLInputElement)
+				.value;
+			const type = (modalBox.querySelector("#tag-type") as HTMLSelectElement)
+				.value;
+			const triggerName = (
+				modalBox.querySelector("#tag-trigger") as HTMLSelectElement
+			).value;
+			const priority =
+				Number(
+					(modalBox.querySelector("#tag-priority") as HTMLInputElement).value,
+				) || 0;
+			const requiredConsent = (
+				modalBox.querySelector("#tag-consent") as HTMLSelectElement
+			).value;
 
 			const created = await ApiClient.createEntity(state.workspaceId, {
 				name,

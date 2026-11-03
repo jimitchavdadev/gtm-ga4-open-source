@@ -4,16 +4,30 @@
   "type": "module",
   "private": true,
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "test": "bun test",
-    "lint": "biome check src/ tests/",
-    "lint:fix": "biome check --write src/ tests/",
+    "lint": "biome check src/ app/ tests/",
+    "lint:fix": "biome check --write src/ app/ tests/",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.4",
-    "@types/bun": "latest"
+    "@tailwindcss/postcss": "^4.3.4",
+    "@types/bun": "latest",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "autoprefixer": "^10.6.2",
+    "postcss": "^8.5.32",
+    "tailwindcss": "^4.3.4"
   },
   "peerDependencies": {
     "typescript": "^7"
+  },
+  "dependencies": {
+    "next": "^16.4.4",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
   }
 }

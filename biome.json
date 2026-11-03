@@ -7,7 +7,17 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"includes": ["src/**/*.ts", "src/**/*.tsx", "tests/**/*.ts", "index.ts"]
+		"includes": [
+			"src/**/*.ts",
+			"src/**/*.tsx",
+			"app/**/*.ts",
+			"app/**/*.tsx",
+			"components/**/*.ts",
+			"components/**/*.tsx",
+			"hooks/**/*.ts",
+			"tests/**/*.ts",
+			"index.ts"
+		]
 	},
 	"formatter": {
 		"enabled": true,

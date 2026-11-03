@@ -1,5 +1,3 @@
-import { store } from "../state";
-
 export function renderGa4Funnel(): HTMLElement {
 	const el = document.createElement("div");
 

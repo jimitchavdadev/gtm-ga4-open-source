@@ -1,5 +1,3 @@
-import { store } from "../state";
-
 export function renderGa4Reports(): HTMLElement {
 	const el = document.createElement("div");
 	let activeSubTab: "ACQUISITION" | "ENGAGEMENT" | "MONETIZATION" | "TECH" =

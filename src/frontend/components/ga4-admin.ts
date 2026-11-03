@@ -130,7 +130,10 @@ export function renderGa4Admin(): HTMLElement {
 
 	el.querySelector("#check-redact-email")?.addEventListener("change", (e) => {
 		const checked = (e.target as HTMLInputElement).checked;
-		store.notifyUser(`Email redaction ${checked ? "enabled" : "disabled"}`, "info");
+		store.notifyUser(
+			`Email redaction ${checked ? "enabled" : "disabled"}`,
+			"info",
+		);
 	});
 
 	el.querySelector("#btn-add-stream")?.addEventListener("click", () => {

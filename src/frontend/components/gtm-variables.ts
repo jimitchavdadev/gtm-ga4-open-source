@@ -115,9 +115,12 @@ export function renderGtmVariables(): HTMLElement {
 		});
 
 		modalBox.querySelector("#var-save")?.addEventListener("click", async () => {
-			const name = (modalBox.querySelector("#var-name") as HTMLInputElement).value;
-			const type = (modalBox.querySelector("#var-type") as HTMLSelectElement).value;
-			const path = (modalBox.querySelector("#var-path") as HTMLInputElement).value;
+			const name = (modalBox.querySelector("#var-name") as HTMLInputElement)
+				.value;
+			const type = (modalBox.querySelector("#var-type") as HTMLSelectElement)
+				.value;
+			const path = (modalBox.querySelector("#var-path") as HTMLInputElement)
+				.value;
 
 			const created = await ApiClient.createEntity(state.workspaceId, {
 				name,

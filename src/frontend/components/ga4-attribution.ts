@@ -3,10 +3,18 @@ import { store } from "../state";
 export function renderGa4Attribution(): HTMLElement {
 	const el = document.createElement("div");
 	const state = store.getState();
-	const attr = state.attributionData?.models || {
+	const _attr = state.attributionData?.models || {
 		lastClick: { "Organic Search": 40, "Paid Search": 35, Email: 25 },
-		markovRemovalEffects: { "Paid Search": 0.45, "Organic Search": 0.35, Email: 0.2 },
-		shapleyValueDDA: { "Paid Search": 0.42, "Organic Search": 0.38, Email: 0.2 },
+		markovRemovalEffects: {
+			"Paid Search": 0.45,
+			"Organic Search": 0.35,
+			Email: 0.2,
+		},
+		shapleyValueDDA: {
+			"Paid Search": 0.42,
+			"Organic Search": 0.38,
+			Email: 0.2,
+		},
 	};
 
 	el.innerHTML = `

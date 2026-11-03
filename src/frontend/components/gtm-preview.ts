@@ -9,7 +9,12 @@ export function renderGtmPreview(): HTMLElement {
 	const events = [
 		{ id: 1, name: "Consent (default)", time: "0.00s", type: "consent" },
 		{ id: 2, name: "Initialization (gtm.init)", time: "0.02s", type: "init" },
-		{ id: 3, name: "Container Loaded (gtm.js)", time: "0.05s", type: "pageview" },
+		{
+			id: 3,
+			name: "Container Loaded (gtm.js)",
+			time: "0.05s",
+			type: "pageview",
+		},
 		{ id: 4, name: "DOM Ready (gtm.dom)", time: "0.12s", type: "dom" },
 		{ id: 5, name: "Window Loaded (gtm.load)", time: "0.25s", type: "window" },
 		{ id: 6, name: "purchase", time: "1.42s", type: "custom" },
@@ -111,13 +116,18 @@ export function renderGtmPreview(): HTMLElement {
 
 		el.querySelectorAll(".event-item").forEach((item) => {
 			item.addEventListener("click", (e) => {
-				selectedEventIndex = Number((e.currentTarget as HTMLElement).dataset.idx);
+				selectedEventIndex = Number(
+					(e.currentTarget as HTMLElement).dataset.idx,
+				);
 				updateView();
 			});
 		});
 
 		el.querySelector("#btn-push-test-event")?.addEventListener("click", () => {
-			store.notifyUser("Pushed { event: 'custom_conversion' } to dataLayer!", "success");
+			store.notifyUser(
+				"Pushed { event: 'custom_conversion' } to dataLayer!",
+				"success",
+			);
 			events.push({
 				id: events.length + 1,
 				name: "custom_conversion",

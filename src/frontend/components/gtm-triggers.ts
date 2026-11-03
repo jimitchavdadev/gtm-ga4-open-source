@@ -104,20 +104,26 @@ export function renderGtmTriggers(): HTMLElement {
 			modalBox.innerHTML = "";
 		});
 
-		modalBox.querySelector("#trig-save")?.addEventListener("click", async () => {
-			const name = (modalBox.querySelector("#trig-name") as HTMLInputElement).value;
-			const type = (modalBox.querySelector("#trig-type") as HTMLSelectElement).value;
-			const condition = (modalBox.querySelector("#trig-condition") as HTMLInputElement).value;
+		modalBox
+			.querySelector("#trig-save")
+			?.addEventListener("click", async () => {
+				const name = (modalBox.querySelector("#trig-name") as HTMLInputElement)
+					.value;
+				const type = (modalBox.querySelector("#trig-type") as HTMLSelectElement)
+					.value;
+				const condition = (
+					modalBox.querySelector("#trig-condition") as HTMLInputElement
+				).value;
 
-			const created = await ApiClient.createEntity(state.workspaceId, {
-				name,
-				entity_type: "TRIGGER",
-				data: { type, condition },
+				const created = await ApiClient.createEntity(state.workspaceId, {
+					name,
+					entity_type: "TRIGGER",
+					data: { type, condition },
+				});
+				modalBox.innerHTML = "";
+				store.setState({ triggers: [...state.triggers, created] });
+				store.notifyUser(`Trigger "${name}" created!`, "success");
 			});
-			modalBox.innerHTML = "";
-			store.setState({ triggers: [...state.triggers, created] });
-			store.notifyUser(`Trigger "${name}" created!`, "success");
-		});
 	});
 
 	return el;

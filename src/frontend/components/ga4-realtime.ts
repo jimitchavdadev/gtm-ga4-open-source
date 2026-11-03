@@ -97,16 +97,22 @@ export function renderGa4Realtime(): HTMLElement {
     </div>
   `;
 
-	el.querySelector("#btn-fire-test-hit")?.addEventListener("click", async () => {
-		store.notifyUser("Sending test /g/collect request...", "info");
-		await fetch(
-			`/g/collect?v=2&tid=${state.containerId}&cid=user_${Date.now()}&en=purchase&ep.value=79.99&ep.currency=USD`,
-			{ method: "POST" },
-		);
-		const refreshed = await ApiClient.fetchRealtime(state.propertyId);
-		store.setState({ realtimeData: refreshed });
-		store.notifyUser("Purchase conversion received live in Realtime!", "success");
-	});
+	el.querySelector("#btn-fire-test-hit")?.addEventListener(
+		"click",
+		async () => {
+			store.notifyUser("Sending test /g/collect request...", "info");
+			await fetch(
+				`/g/collect?v=2&tid=${state.containerId}&cid=user_${Date.now()}&en=purchase&ep.value=79.99&ep.currency=USD`,
+				{ method: "POST" },
+			);
+			const refreshed = await ApiClient.fetchRealtime(state.propertyId);
+			store.setState({ realtimeData: refreshed });
+			store.notifyUser(
+				"Purchase conversion received live in Realtime!",
+				"success",
+			);
+		},
+	);
 
 	return el;
 }

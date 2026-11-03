@@ -45,10 +45,7 @@ export class EntityRepository {
 		return { ...entity, created_at: now, updated_at: now };
 	}
 
-	public getEntities(
-		workspaceId: string,
-		entityType?: string,
-	): EntityRecord[] {
+	public getEntities(workspaceId: string, entityType?: string): EntityRecord[] {
 		if (entityType) {
 			const stmt = this.db.prepare(
 				"SELECT * FROM container_entities WHERE workspace_id = ? AND entity_type = ? ORDER BY name ASC",

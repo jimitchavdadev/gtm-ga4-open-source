@@ -41,7 +41,12 @@ export async function handleGa4Api(
 				propertyId: propId,
 				kpis: {
 					totalUsers: uniqueUsers,
-					newUsers: Math.min(uniqueUsers, events.filter((e) => e.event_name === "session_start" || e.session_id === 1).length || 1),
+					newUsers: Math.min(
+						uniqueUsers,
+						events.filter(
+							(e) => e.event_name === "session_start" || e.session_id === 1,
+						).length || 1,
+					),
 					sessions: uniqueSessions,
 					eventCount: events.length,
 					totalRevenue: Number(totalRevenue.toFixed(2)),
@@ -65,7 +70,9 @@ export async function handleGa4Api(
 	if (attrMatch?.[1] && req.method === "GET") {
 		const propId = attrMatch[1];
 		const events = db
-			.prepare("SELECT * FROM raw_events WHERE property_id = ? ORDER BY timestamp_micros ASC")
+			.prepare(
+				"SELECT * FROM raw_events WHERE property_id = ? ORDER BY timestamp_micros ASC",
+			)
 			.all(propId) as any[];
 
 		// Group events by client_id into journeys
@@ -79,23 +86,31 @@ export async function handleGa4Api(
 			j.push(e);
 		}
 
-		const journeys = Array.from(journeysMap.entries()).map(([cid, evs], idx) => {
-			const touchpoints = evs.map((e) => {
-				let channel = "Direct";
-				try {
-					const p = JSON.parse(e.event_params_json || "{}");
-					channel = p.campaign || p.source || (e.event_name === "page_view" ? "Organic Search" : "Direct");
-				} catch {}
-				return { channel, timestamp: e.timestamp_micros };
-			});
-			const hasPurchase = evs.some((e) => e.event_name === "purchase");
-			return {
-				id: `j_${idx}`,
-				touchpoints: touchpoints.length > 0 ? touchpoints : [{ channel: "Direct", timestamp: 1 }],
-				converted: hasPurchase || evs.length > 2,
-				revenue: hasPurchase ? 100 : 25,
-			};
-		});
+		const journeys = Array.from(journeysMap.entries()).map(
+			([_cid, evs], idx) => {
+				const touchpoints = evs.map((e) => {
+					let channel = "Direct";
+					try {
+						const p = JSON.parse(e.event_params_json || "{}");
+						channel =
+							p.campaign ||
+							p.source ||
+							(e.event_name === "page_view" ? "Organic Search" : "Direct");
+					} catch {}
+					return { channel, timestamp: e.timestamp_micros };
+				});
+				const hasPurchase = evs.some((e) => e.event_name === "purchase");
+				return {
+					id: `j_${idx}`,
+					touchpoints:
+						touchpoints.length > 0
+							? touchpoints
+							: [{ channel: "Direct", timestamp: 1 }],
+					converted: hasPurchase || evs.length > 2,
+					revenue: hasPurchase ? 100 : 25,
+				};
+			},
+		);
 
 		const lastClick = AttributionEngine.calculateLastClick(journeys);
 		const markov = AttributionEngine.calculateMarkovRemovalEffects(journeys);
@@ -133,10 +148,19 @@ export async function handleGa4Api(
 
 		const counts = steps.map((s) => ({
 			step: s.name,
-			users: new Set(events.filter((e) => e.event_name === s.event || e.event_name === "page_view").map((e) => e.client_id)).size,
+			users: new Set(
+				events
+					.filter(
+						(e) => e.event_name === s.event || e.event_name === "page_view",
+					)
+					.map((e) => e.client_id),
+			).size,
 		}));
 
-		return Response.json({ propertyId: propId, funnel: counts }, { headers: corsHeaders });
+		return Response.json(
+			{ propertyId: propId, funnel: counts },
+			{ headers: corsHeaders },
+		);
 	}
 
 	return null;

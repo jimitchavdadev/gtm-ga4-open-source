@@ -109,11 +109,17 @@ export function renderGtmEnterprise(): HTMLElement {
   `;
 
 	el.querySelector(".btn-approve")?.addEventListener("click", () => {
-		store.notifyUser("Approval request #1 approved and marked Ready for Publish!", "success");
+		store.notifyUser(
+			"Approval request #1 approved and marked Ready for Publish!",
+			"success",
+		);
 	});
 
 	el.querySelector(".btn-reject")?.addEventListener("click", () => {
-		store.notifyUser("Approval request #1 rejected with change requests sent to author.", "info");
+		store.notifyUser(
+			"Approval request #1 rejected with change requests sent to author.",
+			"info",
+		);
 	});
 
 	el.querySelector("#btn-add-zone")?.addEventListener("click", () => {
