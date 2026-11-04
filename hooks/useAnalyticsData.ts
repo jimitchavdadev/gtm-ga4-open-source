@@ -26,8 +26,8 @@ export function useAnalyticsData({
 	const loadData = useCallback(async () => {
 		try {
 			const [tRes, trRes, vRes, verRes, rRes, sRes, aRes] = await Promise.all([
-				fetch(`/api/v1/workspaces/${workspaceId}/entities?type=TAG`).then((r) =>
-					r.ok ? r.json() : [],
+				fetch(`/api/v1/workspaces/${workspaceId}/entities?type=TAG`).then(
+					(r) => (r.ok ? r.json() : []),
 				),
 				fetch(`/api/v1/workspaces/${workspaceId}/entities?type=TRIGGER`).then(
 					(r) => (r.ok ? r.json() : []),
@@ -62,11 +62,7 @@ export function useAnalyticsData({
 		loadData();
 	}, [loadData]);
 
-	const createEntity = async (
-		name: string,
-		entity_type: string,
-		data: any,
-	) => {
+	const createEntity = async (name: string, entity_type: string, data: any) => {
 		const res = await fetch(`/api/v1/workspaces/${workspaceId}/entities`, {
 			method: "POST",
 			headers: { "Content-Type": "application/json" },

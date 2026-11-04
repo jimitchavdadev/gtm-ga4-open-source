@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite";
+import type { SqliteDatabase } from "./connection";
 
 export interface PropertyRecord {
 	id: string;
@@ -40,7 +40,7 @@ export interface RawEventRecord {
 }
 
 export class EventRepository {
-	constructor(private db: Database) {}
+	constructor(private db: SqliteDatabase) {}
 
 	public createProperty(
 		prop: Omit<PropertyRecord, "created_at" | "updated_at">,
@@ -65,7 +65,7 @@ export class EventRepository {
 
 	public getProperty(id: string): PropertyRecord | null {
 		const stmt = this.db.prepare("SELECT * FROM ga4_properties WHERE id = ?");
-		return stmt.get(id) as PropertyRecord | null;
+		return stmt.get(id) as unknown as PropertyRecord | null;
 	}
 
 	public createDataStream(
@@ -95,7 +95,7 @@ export class EventRepository {
 		const stmt = this.db.prepare(
 			"SELECT * FROM ga4_data_streams WHERE measurement_id = ?",
 		);
-		return stmt.get(measurementId) as DataStreamRecord | null;
+		return stmt.get(measurementId) as unknown as DataStreamRecord | null;
 	}
 
 	public insertRawEvent(
@@ -129,6 +129,6 @@ export class EventRepository {
 		const stmt = this.db.prepare(
 			"SELECT * FROM raw_events WHERE property_id = ? ORDER BY timestamp_micros DESC LIMIT ?",
 		);
-		return stmt.all(propertyId, limit) as RawEventRecord[];
+		return stmt.all(propertyId, limit) as unknown as RawEventRecord[];
 	}
 }

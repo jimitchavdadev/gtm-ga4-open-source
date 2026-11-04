@@ -1,11 +1,13 @@
-import { Database } from "bun:sqlite";
+import { DatabaseSync } from "node:sqlite";
 import { CREATE_TABLES_SQL } from "./schema";
 
+export type SqliteDatabase = DatabaseSync;
+
 export class DatabaseManager {
-	private db: Database;
+	private db: DatabaseSync;
 
 	constructor(dbPath: string = ":memory:") {
-		this.db = new Database(dbPath);
+		this.db = new DatabaseSync(dbPath);
 		this.db.exec("PRAGMA foreign_keys = ON;");
 		this.db.exec("PRAGMA journal_mode = WAL;");
 		this.initialize();
@@ -15,7 +17,7 @@ export class DatabaseManager {
 		this.db.exec(CREATE_TABLES_SQL);
 	}
 
-	public getDb(): Database {
+	public getDb(): DatabaseSync {
 		return this.db;
 	}
 

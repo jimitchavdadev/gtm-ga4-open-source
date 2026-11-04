@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-	serverExternalPackages: ["bun:sqlite"],
+	serverExternalPackages: ["node:sqlite"],
 };
 
 export default nextConfig;

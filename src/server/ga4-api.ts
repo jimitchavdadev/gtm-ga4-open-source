@@ -1,10 +1,10 @@
-import type { Database } from "bun:sqlite";
+import type { SqliteDatabase } from "../db/connection";
 import { AttributionEngine } from "../ga4/attribution";
 
 export async function handleGa4Api(
 	req: Request,
 	url: URL,
-	db: Database,
+	db: SqliteDatabase,
 	corsHeaders: Record<string, string>,
 ): Promise<Response | null> {
 	// Standard Reports

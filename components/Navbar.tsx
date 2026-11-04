@@ -57,7 +57,8 @@ export function Navbar({
 				<div className="rounded-md bg-gray-100 px-3 py-1 text-xs text-gray-600">
 					{platform === "GTM" ? (
 						<>
-							Container: <strong className="text-gray-900">{containerId}</strong>
+							Container:{" "}
+							<strong className="text-gray-900">{containerId}</strong>
 						</>
 					) : (
 						<>

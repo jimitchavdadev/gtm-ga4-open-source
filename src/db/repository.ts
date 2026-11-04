@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite";
+import type { SqliteDatabase } from "./connection";
 
 export interface AccountRecord {
 	id: string;
@@ -31,7 +31,7 @@ export interface WorkspaceRecord {
 }
 
 export class AnalyticsRepository {
-	constructor(private db: Database) {}
+	constructor(private db: SqliteDatabase) {}
 
 	public createAccount(
 		account: Omit<AccountRecord, "created_at" | "updated_at">,
@@ -54,7 +54,7 @@ export class AnalyticsRepository {
 
 	public getAccount(id: string): AccountRecord | null {
 		const stmt = this.db.prepare("SELECT * FROM accounts WHERE id = ?");
-		return stmt.get(id) as AccountRecord | null;
+		return stmt.get(id) as unknown as AccountRecord | null;
 	}
 
 	public createContainer(
@@ -82,7 +82,7 @@ export class AnalyticsRepository {
 		const stmt = this.db.prepare(
 			"SELECT * FROM containers WHERE public_id = ?",
 		);
-		return stmt.get(publicId) as ContainerRecord | null;
+		return stmt.get(publicId) as unknown as ContainerRecord | null;
 	}
 
 	public createWorkspace(
@@ -109,6 +109,6 @@ export class AnalyticsRepository {
 		const stmt = this.db.prepare(
 			"SELECT * FROM workspaces WHERE container_id = ? ORDER BY created_at ASC",
 		);
-		return stmt.all(containerId) as WorkspaceRecord[];
+		return stmt.all(containerId) as unknown as WorkspaceRecord[];
 	}
 }

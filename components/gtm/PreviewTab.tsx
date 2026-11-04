@@ -12,7 +12,12 @@ export function PreviewTab({ containerId, onPushEvent }: PreviewTabProps) {
 	const [events, setEvents] = useState([
 		{ id: 1, name: "Consent (default)", time: "0.00s", type: "consent" },
 		{ id: 2, name: "Initialization (gtm.init)", time: "0.02s", type: "init" },
-		{ id: 3, name: "Container Loaded (gtm.js)", time: "0.05s", type: "pageview" },
+		{
+			id: 3,
+			name: "Container Loaded (gtm.js)",
+			time: "0.05s",
+			type: "pageview",
+		},
 		{ id: 4, name: "DOM Ready (gtm.dom)", time: "0.12s", type: "dom" },
 		{ id: 5, name: "Window Loaded (gtm.load)", time: "0.25s", type: "window" },
 		{ id: 6, name: "purchase", time: "1.42s", type: "custom" },
@@ -37,9 +42,12 @@ export function PreviewTab({ containerId, onPushEvent }: PreviewTabProps) {
 		<div className="space-y-6">
 			<div className="flex items-center justify-between">
 				<div>
-					<h2 className="text-xl font-bold text-gray-900">Tag Assistant (Preview & Debug)</h2>
+					<h2 className="text-xl font-bold text-gray-900">
+						Tag Assistant (Preview & Debug)
+					</h2>
 					<p className="mt-1 text-sm text-gray-500">
-						Connected to container <strong className="font-mono text-gray-800">{containerId}</strong>
+						Connected to container{" "}
+						<strong className="font-mono text-gray-800">{containerId}</strong>
 					</p>
 				</div>
 				<button
@@ -72,7 +80,9 @@ export function PreviewTab({ containerId, onPushEvent }: PreviewTabProps) {
 								<span>
 									{e.id}. {e.name}
 								</span>
-								<span className="font-mono text-xs text-gray-400">{e.time}</span>
+								<span className="font-mono text-xs text-gray-400">
+									{e.time}
+								</span>
 							</button>
 						))}
 					</div>
@@ -82,31 +92,40 @@ export function PreviewTab({ containerId, onPushEvent }: PreviewTabProps) {
 				<div className="flex-1 space-y-6">
 					<div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">
 						<h3 className="text-base font-bold text-gray-900">
-							Tags Fired on Event: <span className="text-blue-600">{currentEvent?.name}</span>
+							Tags Fired on Event:{" "}
+							<span className="text-blue-600">{currentEvent?.name}</span>
 						</h3>
 						<div className="mt-4">
 							{isPurchase || currentEvent?.name.includes("Loaded") ? (
 								<div className="rounded-lg border border-gray-200 bg-gray-50/50 p-4">
 									<div className="flex items-center justify-between">
-										<strong className="text-sm text-gray-900">Google Analytics: GA4 Event Tag</strong>
+										<strong className="text-sm text-gray-900">
+											Google Analytics: GA4 Event Tag
+										</strong>
 										<span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
 											Fired 1 time
 										</span>
 									</div>
 									<div className="mt-2 text-xs text-gray-500">
 										Firing Trigger:{" "}
-										<code className="text-gray-800">{isPurchase ? "purchase" : "All Pages"}</code> &bull; Priority:{" "}
-										<code className="text-gray-800">10</code>
+										<code className="text-gray-800">
+											{isPurchase ? "purchase" : "All Pages"}
+										</code>{" "}
+										&bull; Priority: <code className="text-gray-800">10</code>
 									</div>
 								</div>
 							) : (
-								<p className="text-sm text-gray-400">No tags fired on this event.</p>
+								<p className="text-sm text-gray-400">
+									No tags fired on this event.
+								</p>
 							)}
 						</div>
 					</div>
 
 					<div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">
-						<h3 className="text-base font-bold text-gray-900">Data Layer State</h3>
+						<h3 className="text-base font-bold text-gray-900">
+							Data Layer State
+						</h3>
 						<pre className="mt-4 overflow-x-auto rounded-lg bg-gray-900 p-4 font-mono text-xs text-emerald-400">
 							{isPurchase
 								? JSON.stringify(
@@ -116,7 +135,12 @@ export function PreviewTab({ containerId, onPushEvent }: PreviewTabProps) {
 												transaction_id: "T_98765",
 												value: 99.5,
 												currency: "USD",
-												items: [{ item_name: "Open Source Analytics Pro", price: 99.5 }],
+												items: [
+													{
+														item_name: "Open Source Analytics Pro",
+														price: 99.5,
+													},
+												],
 											},
 											uniqueEventId: 6,
 										},

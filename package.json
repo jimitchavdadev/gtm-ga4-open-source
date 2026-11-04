@@ -8,8 +8,8 @@
     "build": "next build",
     "start": "next start",
     "test": "bun test",
-    "lint": "biome check src/ app/ tests/",
-    "lint:fix": "biome check --write src/ app/ tests/",
+    "lint": "biome check src/ app/ components/ hooks/ tests/",
+    "lint:fix": "biome check --write src/ app/ components/ hooks/ tests/",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import type { Database } from "bun:sqlite";
+import type { SqliteDatabase } from "./connection";
 
 export interface EntityRecord {
 	id: string;
@@ -22,7 +22,7 @@ export interface VersionRecord {
 }
 
 export class EntityRepository {
-	constructor(private db: Database) {}
+	constructor(private db: SqliteDatabase) {}
 
 	public createEntity(
 		entity: Omit<EntityRecord, "created_at" | "updated_at">,
@@ -50,12 +50,12 @@ export class EntityRepository {
 			const stmt = this.db.prepare(
 				"SELECT * FROM container_entities WHERE workspace_id = ? AND entity_type = ? ORDER BY name ASC",
 			);
-			return stmt.all(workspaceId, entityType) as EntityRecord[];
+			return stmt.all(workspaceId, entityType) as unknown as EntityRecord[];
 		}
 		const stmt = this.db.prepare(
 			"SELECT * FROM container_entities WHERE workspace_id = ? ORDER BY entity_type, name ASC",
 		);
-		return stmt.all(workspaceId) as EntityRecord[];
+		return stmt.all(workspaceId) as unknown as EntityRecord[];
 	}
 
 	public updateEntity(
@@ -65,7 +65,7 @@ export class EntityRepository {
 		const now = Date.now();
 		const existing = this.db
 			.prepare("SELECT * FROM container_entities WHERE id = ?")
-			.get(id) as EntityRecord | null;
+			.get(id) as unknown as EntityRecord | null;
 		if (!existing) return false;
 
 		const stmt = this.db.prepare(`
@@ -131,6 +131,6 @@ export class EntityRepository {
 		const stmt = this.db.prepare(
 			"SELECT * FROM container_versions WHERE container_id = ? ORDER BY version_number DESC",
 		);
-		return stmt.all(containerId) as VersionRecord[];
+		return stmt.all(containerId) as unknown as VersionRecord[];
 	}
 }
