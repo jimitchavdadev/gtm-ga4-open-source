@@ -1,4 +1,5 @@
 use crate::db::event_repo::EventRepository;
+use crate::db::pool::DbPool;
 use crate::redaction::email::redact_emails;
 use crate::wire::mp_validator::MpValidator;
 use crate::wire::parser::WireParser;
@@ -14,6 +15,7 @@ use std::sync::Arc;
 
 pub struct AppState {
     pub repo: EventRepository,
+    pub pool: Arc<DbPool>,
 }
 
 pub async fn handle_g_collect(

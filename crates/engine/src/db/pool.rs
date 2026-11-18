@@ -3,8 +3,10 @@ use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
 pub struct DatabasePool {
-    conn: Arc<Mutex<Connection>>,
+    pub conn: Arc<Mutex<Connection>>,
 }
+
+pub type DbPool = DatabasePool;
 
 impl DatabasePool {
     pub fn new_in_memory() -> Result<Self> {

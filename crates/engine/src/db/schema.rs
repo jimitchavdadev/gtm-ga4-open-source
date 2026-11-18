@@ -5,7 +5,6 @@ pub fn init_database(conn: &Connection) -> Result<()> {
         r#"
         PRAGMA journal_mode = WAL;
         PRAGMA synchronous = NORMAL;
-        PRAGMA foreign_keys = ON;
 
         CREATE TABLE IF NOT EXISTS ga4_properties (
             id TEXT PRIMARY KEY,
@@ -47,6 +46,46 @@ pub fn init_database(conn: &Connection) -> Result<()> {
         CREATE INDEX IF NOT EXISTS idx_events_client ON raw_events (client_id);
         CREATE INDEX IF NOT EXISTS idx_events_user ON raw_events (user_id);
         CREATE INDEX IF NOT EXISTS idx_events_name ON raw_events (event_name);
+
+        CREATE TABLE IF NOT EXISTS gtm_accounts (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            created_at INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS gtm_containers (
+            id TEXT PRIMARY KEY,
+            account_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            usage_context TEXT NOT NULL,
+            created_at INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS gtm_workspaces (
+            id TEXT PRIMARY KEY,
+            container_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            is_default INTEGER DEFAULT 0,
+            created_at INTEGER NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS gtm_entities (
+            id TEXT PRIMARY KEY,
+            workspace_id TEXT NOT NULL,
+            entity_type TEXT NOT NULL,
+            name TEXT NOT NULL,
+            data_json TEXT NOT NULL,
+            fingerprint TEXT NOT NULL
+        );
+
+        CREATE TABLE IF NOT EXISTS gtm_versions (
+            id TEXT PRIMARY KEY,
+            container_id TEXT NOT NULL,
+            name TEXT NOT NULL,
+            description TEXT,
+            entities_json TEXT NOT NULL,
+            created_at INTEGER NOT NULL
+        );
         "#,
     )?;
     Ok(())

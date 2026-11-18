@@ -11,8 +11,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let db_path = std::env::var("DATABASE_PATH").unwrap_or_else(|_| "analytics.db".to_string());
     let pool = DatabasePool::new_file(&db_path)?;
-    let repo = EventRepository::new(pool);
-    let state = Arc::new(AppState { repo });
+    let repo = EventRepository::new(pool.clone());
+    let state = Arc::new(AppState {
+        repo,
+        pool: Arc::new(pool),
+    });
 
     let app = build_router(state);
 
