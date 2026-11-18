@@ -88,3 +88,32 @@ Implemented in `src/ga4/attribution.ts` and `crates/engine/src/attribution/`.
 - Computes the marginal contribution of channel $i$ across all possible channel subsets $S \subseteq N \setminus \{i\}$:
   $$\phi_i(v) = \sum_{S \subseteq N \setminus \{i\}} \frac{|S|!(|N| - |S| - 1)!}{|N|!} (v(S \cup \{i\}) - v(S))$$
 - Guarantees fair, mathematically axiom-compliant budget attribution.
+
+---
+
+## 6. High-Scale Ingestion & The 24–48 Hour Processing Latency
+
+### 6.1 Dual-Path Ingestion Architecture (Lambda / Kappa Pattern)
+Google Analytics 4 ingests tens of billions of events per day using a bifurcated pipeline:
+1. **Stream Path (Realtime Report — < 1 second latency)**:
+   - Hit arrives at Edge Anycast Google Front End (GFE) -> pub/sub stream -> in-memory streaming processor (Cloud Dataflow / Bigtable).
+   - Only counts raw event hits and active client IDs for the trailing 30-minute window.
+   - Performs **zero** heavy computation (no multi-touch attribution, no cross-device identity stitching, no behavioral modeling).
+2. **Batch / Analytics Lake Path (Standard Reports — 12 to 48 hours latency)**:
+   - Raw hits are buffered into distributed columnar analytical storage (Colossus / BigQuery Capacitor).
+   - Periodic batch jobs run heavy algorithmic transformations across 24-hour windows.
+
+### 6.2 The 6 Architectural Reasons for the 12–48 Hour Reporting Lag
+1. **Late-Arriving Data Window (Up to 72 Hours)**:
+   - Mobile apps (iOS/Android) cache hits offline when devices lose network connectivity and flush them hours or days later. Measurement Protocol allows late hits up to 72 hours in the past. GA4 holds reporting consolidation to avoid retroactive metric divergence.
+2. **Sessionization & Midnight Timezone Re-Aggregation**:
+   - Sessions are subject to 30-minute inactivity timeouts and midnight boundary splitting based on the property's local timezone. A session started at 11:45 PM cannot be finalized until all potential hits across the midnight threshold have arrived.
+3. **Cross-Device Identity Stitching (Blended Graph)**:
+   - Stitching a user's multi-device path (phone -> laptop -> tablet) requires retroactively scanning past sessions once a user signs in (`uid` or Google Signals match). GA4 re-attributes historical anonymous hits to the unified user profile during daily batch cycles.
+4. **Data-Driven Attribution (DDA) Journey Computation**:
+   - DDA computes Shapley values and Markov removal effects across multi-channel paths with up to **90-day lookback windows**. Calculating transition matrices cannot be done in real time per hit; it requires batch graph traversal over completed journeys.
+5. **Machine Learning Behavioral & Conversion Modeling**:
+   - For users denying consent under Consent Mode v2 (`gcs=G100`), GA4 trains machine learning models on consented user cohorts to estimate unconsented traffic and conversion volumes. Model retraining and batch inference run on scheduled daily pipelines.
+6. **Pre-Aggregation Rollups, HyperLogLog & Privacy Thresholding**:
+   - Standard reports query pre-aggregated summary tables rather than scanning billions of raw rows at query time. During rollup creation, GA4 applies HyperLogLog (HLL++) cardinality estimation and data thresholding to protect user anonymity when audience counts are small.
+

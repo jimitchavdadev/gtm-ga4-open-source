@@ -52,6 +52,7 @@ This glossary defines all domain-specific terminology, technical jargons, wire p
 | **Data-Driven Attribution (DDA)** | Algorithmic credit assignment across touchpoints using **Markov Chain Removal Effects** and **Shapley Value** cooperative game theory. |
 | **Subproperties & Rollups (GA4 360)** | Subproperties filter a parent property's data for specific regions/brands; Roll-up properties aggregate multiple properties into a single enterprise view. |
 | **Explorations** | Advanced ad-hoc reporting tools: Free-form crosstabs, Funnel Exploration, Path Exploration, Segment Overlap, and Cohort Exploration. |
+| **Data Processing Latency** | The 24–48 hour delay before raw events appear in standard GA4 reports, caused by late-arriving hit buffers, daily session cutoffs, identity stitching, DDA graph traversals, and ML behavioral modeling. |
 
 ---
 
