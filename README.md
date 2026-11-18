@@ -12,6 +12,7 @@ Featuring a multi-database backend powered by **SeaORM** (PostgreSQL, MySQL, SQL
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)**: Deep architectural topology, data flow sequence diagrams, and SeaORM schema.
 - **[ONBOARDING.md](./ONBOARDING.md)**: Product onboarding guide for GTM containers, GA4 streams, script snippets, and live verification.
 - **[DEVELOPMENT.md](./DEVELOPMENT.md)**: Developer setup, coding standards, modularity rules, and contribution workflow.
+- **[GLOSSARY.md](./GLOSSARY.md)**: Comprehensive reference of all GTM & GA4 domain terminology and jargons.
 
 ---
 

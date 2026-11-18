@@ -60,6 +60,7 @@ gtm-ga4-open-source/
 ├── ARCHITECTURE.md            # Deep architectural design and data flow specifications
 ├── ONBOARDING.md              # GTM container & GA4 property user onboarding guide
 ├── DEVELOPMENT.md             # Developer setup, commands, testing & contributing guide
+├── GLOSSARY.md                # Comprehensive GTM & GA4 terminology and jargons guide
 ├── next.config.mjs            # Gateway rewrites mapping custom endpoints to Rust
 ├── package.json               # Bun scripts, dependencies, biome config
 ├── crates/engine/             # Rust Analytics Engine (Axum + SeaORM)
