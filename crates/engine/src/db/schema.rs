@@ -47,6 +47,17 @@ pub fn init_database(conn: &Connection) -> Result<()> {
         CREATE INDEX IF NOT EXISTS idx_events_user ON raw_events (user_id);
         CREATE INDEX IF NOT EXISTS idx_events_name ON raw_events (event_name);
 
+        CREATE TABLE IF NOT EXISTS ga4_annotations (
+            id TEXT PRIMARY KEY,
+            property_id TEXT NOT NULL,
+            title TEXT NOT NULL,
+            description TEXT NOT NULL,
+            date TEXT NOT NULL,
+            color TEXT NOT NULL,
+            created_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_annotations_prop ON ga4_annotations (property_id);
+
         CREATE TABLE IF NOT EXISTS gtm_accounts (
             id TEXT PRIMARY KEY,
             name TEXT NOT NULL,

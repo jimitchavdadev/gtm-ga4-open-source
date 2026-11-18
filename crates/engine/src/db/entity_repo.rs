@@ -1,6 +1,7 @@
 use rusqlite::{params, Connection, Result};
 use serde::{Deserialize, Serialize};
 use std::sync::{Arc, Mutex};
+use crate::ga4::Annotation;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GtmEntity {
@@ -39,7 +40,6 @@ impl EntityRepository {
             sql.push_str(" AND entity_type = ?2");
         }
         let mut stmt = conn.prepare(&sql)?;
-
         let rows = if let Some(et) = entity_type {
             stmt.query_map(params![workspace_id, et], Self::map_entity)?
         } else {
@@ -75,23 +75,21 @@ impl EntityRepository {
 
     pub fn update_entity(&self, id: &str, name: Option<&str>, data_json: Option<&str>, fingerprint: &str) -> Result<bool> {
         let conn = self.conn.lock().unwrap();
-        let mut count = 0;
-        if let (Some(n), Some(d)) = (name, data_json) {
-            count = conn.execute(
+        let count = match (name, data_json) {
+            (Some(n), Some(d)) => conn.execute(
                 "UPDATE gtm_entities SET name = ?1, data_json = ?2, fingerprint = ?3 WHERE id = ?4",
                 params![n, d, fingerprint, id],
-            )?;
-        } else if let Some(n) = name {
-            count = conn.execute(
+            )?,
+            (Some(n), None) => conn.execute(
                 "UPDATE gtm_entities SET name = ?1, fingerprint = ?2 WHERE id = ?3",
                 params![n, fingerprint, id],
-            )?;
-        } else if let Some(d) = data_json {
-            count = conn.execute(
+            )?,
+            (None, Some(d)) => conn.execute(
                 "UPDATE gtm_entities SET data_json = ?1, fingerprint = ?2 WHERE id = ?3",
                 params![d, fingerprint, id],
-            )?;
-        }
+            )?,
+            (None, None) => 0,
+        };
         Ok(count > 0)
     }
 
@@ -131,11 +129,55 @@ impl EntityRepository {
                 created_at: row.get(5)?,
             })
         })?;
-
         let mut list = Vec::new();
         for r in rows {
             list.push(r?);
         }
         Ok(list)
+    }
+
+    pub fn create_annotation(&self, id: &str, prop_id: &str, title: &str, desc: &str, date: &str, color: &str) -> Result<Annotation> {
+        let conn = self.conn.lock().unwrap();
+        let now = chrono::Utc::now().timestamp_millis();
+        conn.execute(
+            "INSERT INTO ga4_annotations (id, property_id, title, description, date, color, created_at) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7)",
+            params![id, prop_id, title, desc, date, color, now],
+        )?;
+        Ok(Annotation {
+            id: id.to_string(),
+            property_id: prop_id.to_string(),
+            title: title.to_string(),
+            description: desc.to_string(),
+            date: date.to_string(),
+            color: color.to_string(),
+            created_at: now,
+        })
+    }
+
+    pub fn get_annotations(&self, prop_id: &str) -> Result<Vec<Annotation>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare("SELECT id, property_id, title, description, date, color, created_at FROM ga4_annotations WHERE property_id = ?1 ORDER BY date DESC")?;
+        let rows = stmt.query_map(params![prop_id], |row| {
+            Ok(Annotation {
+                id: row.get(0)?,
+                property_id: row.get(1)?,
+                title: row.get(2)?,
+                description: row.get(3)?,
+                date: row.get(4)?,
+                color: row.get(5)?,
+                created_at: row.get(6)?,
+            })
+        })?;
+        let mut list = Vec::new();
+        for r in rows {
+            list.push(r?);
+        }
+        Ok(list)
+    }
+
+    pub fn delete_annotation(&self, id: &str) -> Result<bool> {
+        let conn = self.conn.lock().unwrap();
+        let count = conn.execute("DELETE FROM ga4_annotations WHERE id = ?1", params![id])?;
+        Ok(count > 0)
     }
 }
