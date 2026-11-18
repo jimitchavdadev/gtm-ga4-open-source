@@ -6,6 +6,7 @@ use crate::attribution::types::{Journey, Touchpoint};
 use crate::explorations::freeform::FreeFormEngine;
 use crate::explorations::funnel::{FunnelExplorationEngine, FunnelStepConfig};
 use crate::explorations::path::PathExplorationEngine;
+use crate::ga4::bigquery_export::BigQueryExporter;
 use axum::{
     extract::{Path, State},
     response::IntoResponse,
@@ -48,46 +49,38 @@ pub async fn handle_attribution_report(Path(property_id): Path<String>) -> impl 
             converted: true,
             revenue: 80.0,
         },
-        Journey {
-            id: "j3".into(),
-            touchpoints: vec![
-                Touchpoint { channel: "Paid Search".into(), timestamp: 120 },
-            ],
-            converted: false,
-            revenue: 0.0,
-        },
     ];
 
-    let last_click = LastClickAttribution::calculate(&journeys);
+    let lc = LastClickAttribution::calculate(&journeys);
     let markov = MarkovAttribution::calculate(&journeys);
     let shapley = ShapleyAttribution::calculate(&journeys);
 
     Json(json!({
         "propertyId": property_id,
         "models": {
-            "lastClick": last_click.weights,
-            "markovRemovalEffects": markov.weights,
-            "shapleyValueDDA": shapley.weights
+            "lastClick": lc,
+            "markovRemovalEffects": markov,
+            "shapleyValueDDA": shapley
         }
     }))
 }
 
-pub async fn handle_funnel_report(Path(_property_id): Path<String>) -> impl IntoResponse {
-    let steps_cfg = vec![
-        FunnelStepConfig { step_name: "1. First Visit".into(), event_name: "page_view".into() },
-        FunnelStepConfig { step_name: "2. View Item".into(), event_name: "view_item".into() },
-        FunnelStepConfig { step_name: "3. Add to Cart".into(), event_name: "add_to_cart".into() },
-        FunnelStepConfig { step_name: "4. Purchase".into(), event_name: "purchase".into() },
-    ];
-    let journeys = vec![
-        vec!["page_view".into(), "view_item".into(), "add_to_cart".into(), "purchase".into()],
-        vec!["page_view".into(), "view_item".into(), "add_to_cart".into()],
-        vec!["page_view".into(), "view_item".into()],
-        vec!["page_view".into()],
+pub async fn handle_funnel_report(Path(property_id): Path<String>) -> impl IntoResponse {
+    let configs = vec![
+        FunnelStepConfig { step_name: "View Item".into(), event_name: "view_item".into() },
+        FunnelStepConfig { step_name: "Add to Cart".into(), event_name: "add_to_cart".into() },
+        FunnelStepConfig { step_name: "Begin Checkout".into(), event_name: "begin_checkout".into() },
+        FunnelStepConfig { step_name: "Purchase".into(), event_name: "purchase".into() },
     ];
 
-    let report = FunnelExplorationEngine::evaluate(&steps_cfg, &journeys, false);
-    Json(report)
+    let user_streams = vec![
+        vec!["view_item".into(), "add_to_cart".into(), "begin_checkout".into(), "purchase".into()],
+        vec!["view_item".into(), "add_to_cart".into()],
+        vec!["view_item".into()],
+    ];
+
+    let report = FunnelExplorationEngine::evaluate(&configs, &user_streams, false);
+    Json(json!({ "propertyId": property_id, "funnel": report }))
 }
 
 pub async fn handle_exploration_report(
@@ -117,4 +110,18 @@ pub async fn handle_exploration_report(
             Json(json!({ "propertyId": property_id, "freeform": report }))
         }
     }
+}
+
+pub async fn handle_bigquery_export(
+    State(state): State<Arc<AppState>>,
+    Path(property_id): Path<String>,
+) -> impl IntoResponse {
+    let recent = state.repo.get_recent_events(&property_id, 100).unwrap_or_default();
+    let records: Vec<_> = recent.iter().map(BigQueryExporter::format_event).collect();
+    Json(json!({
+        "propertyId": property_id,
+        "exportFormat": "BigQuery GA4 Schema v2",
+        "totalRecords": records.len(),
+        "records": records
+    }))
 }

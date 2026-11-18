@@ -4,11 +4,13 @@ import { useState } from "react";
 import { AdminTab } from "@/components/ga4/AdminTab";
 import { AttributionTab } from "@/components/ga4/AttributionTab";
 import { AudiencesTab } from "@/components/ga4/AudiencesTab";
+import { BigQueryExportTab } from "@/components/ga4/BigQueryExportTab";
 import { ExplorationsTab } from "@/components/ga4/ExplorationsTab";
 import { FunnelTab } from "@/components/ga4/FunnelTab";
 import { OverviewTab as Ga4Overview } from "@/components/ga4/OverviewTab";
 import { RealtimeTab } from "@/components/ga4/RealtimeTab";
 import { ReportsTab } from "@/components/ga4/ReportsTab";
+import { CustomTemplatesTab } from "@/components/gtm/CustomTemplatesTab";
 import { EnterpriseTab } from "@/components/gtm/EnterpriseTab";
 import { OverviewTab as GtmOverview } from "@/components/gtm/OverviewTab";
 import { PreviewTab } from "@/components/gtm/PreviewTab";
@@ -96,6 +98,9 @@ export default function DashboardPage() {
 							onDeleteVariable={data.deleteEntity}
 						/>
 					)}
+					{platform === "GTM" && activeTab === "TEMPLATES" && (
+						<CustomTemplatesTab />
+					)}
 					{platform === "GTM" && activeTab === "PREVIEW" && (
 						<PreviewTab
 							containerId={containerId}
@@ -130,6 +135,9 @@ export default function DashboardPage() {
 					)}
 					{platform === "GA4" && activeTab === "FUNNEL" && <FunnelTab />}
 					{platform === "GA4" && activeTab === "AUDIENCES" && <AudiencesTab />}
+					{platform === "GA4" && activeTab === "BIGQUERY" && (
+						<BigQueryExportTab />
+					)}
 					{platform === "GA4" && activeTab === "ADMIN" && <AdminTab />}
 				</main>
 			</div>

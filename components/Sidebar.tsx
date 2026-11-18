@@ -12,6 +12,7 @@ export function Sidebar({ platform, activeTab, onTabChange }: SidebarProps) {
 		{ id: "TAGS", label: "Tags", icon: "🏷️" },
 		{ id: "TRIGGERS", label: "Triggers", icon: "⚡" },
 		{ id: "VARIABLES", label: "Variables", icon: "🧩" },
+		{ id: "TEMPLATES", label: "Custom Templates", icon: "📐" },
 		{ id: "PREVIEW", label: "Tag Assistant", icon: "🔍" },
 		{ id: "ENTERPRISE", label: "360 Governance", icon: "🏢" },
 	];
@@ -24,6 +25,7 @@ export function Sidebar({ platform, activeTab, onTabChange }: SidebarProps) {
 		{ id: "ATTRIBUTION", label: "Attribution (DDA)", icon: "🎯" },
 		{ id: "FUNNEL", label: "Funnel Explore", icon: "📉" },
 		{ id: "AUDIENCES", label: "Audiences & ML", icon: "👥" },
+		{ id: "BIGQUERY", label: "BigQuery Export", icon: "🗄️" },
 		{ id: "ADMIN", label: "Admin & Settings", icon: "⚙️" },
 	];
 
