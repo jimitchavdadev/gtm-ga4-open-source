@@ -1,4 +1,6 @@
+pub mod handlers_admin_api;
 pub mod handlers_collect;
+pub mod handlers_data_api;
 pub mod handlers_diagnostics_annotations;
 pub mod handlers_entities;
 pub mod handlers_identity;

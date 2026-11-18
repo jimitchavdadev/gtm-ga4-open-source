@@ -1,7 +1,14 @@
+use super::handlers_admin_api::{
+    handle_create_audience_export, handle_create_custom_dimension, handle_create_user_deletion,
+    handle_list_data_streams,
+};
 use super::handlers_collect::{
     handle_cloaked_collect, handle_cloaked_ingest, handle_custom_ingest,
     handle_debug_mp_collect, handle_g_collect, handle_mp_collect, handle_pixel_gif,
     AppState,
+};
+use super::handlers_data_api::{
+    handle_batch_run_reports, handle_run_realtime_report, handle_run_report,
 };
 use super::handlers_diagnostics_annotations::{
     create_annotation, delete_annotation, get_tag_diagnostics, list_annotations,
@@ -99,6 +106,34 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .route(
             "/api/v1/annotations/{id}",
             axum::routing::delete(delete_annotation),
+        )
+        .route(
+            "/v1beta/properties/{id}/runReport",
+            post(handle_run_report),
+        )
+        .route(
+            "/v1beta/properties/{id}/runRealtimeReport",
+            post(handle_run_realtime_report),
+        )
+        .route(
+            "/v1beta/properties/{id}/batchRunReports",
+            post(handle_batch_run_reports),
+        )
+        .route(
+            "/v1beta/properties/{id}/dataStreams",
+            get(handle_list_data_streams),
+        )
+        .route(
+            "/v1beta/properties/{id}/customDimensions",
+            post(handle_create_custom_dimension),
+        )
+        .route(
+            "/v1beta/properties/{id}/audienceExports",
+            post(handle_create_audience_export),
+        )
+        .route(
+            "/v1beta/properties/{id}/userDeletions",
+            post(handle_create_user_deletion),
         )
         .layer(cors)
         .with_state(state)

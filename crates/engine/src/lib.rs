@@ -5,6 +5,7 @@ pub mod crypto;
 pub mod db;
 pub mod explorations;
 pub mod ga4;
+pub mod ga4_api;
 pub mod gtm;
 pub mod gtm_enterprise;
 pub mod identity;
