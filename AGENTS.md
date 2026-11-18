@@ -57,6 +57,16 @@ When modifying or adding code, you **MUST** uphold these non-negotiable rules:
 ```
 gtm-ga4-open-source/
 ├── AGENTS.md                  # This file (Agent & developer quickstart context)
+├── agents/                    # Modular, deep agent knowledge base (<domain>.md)
+│   ├── README.md              # Agent system index and reading guide
+│   ├── DEVELOPER_RULES_AND_STANDARDS.md # The 6 cardinal invariants
+│   ├── ARCHITECTURE.md        # Complete system topology and sequence flows
+│   ├── DATA_MODELS_AND_SCHEMA.md # SeaORM entities, relations & multi-DB
+│   ├── INGESTION_AND_ENDPOINTS.md # First-party endpoints & privacy filters
+│   ├── GTM_ENGINE.md          # DataLayer deep-merge, DAG, Tag scheduler
+│   ├── GA4_ENGINE.md          # Sessionization, identity graph, DDA attribution
+│   ├── MULTI_PLATFORM_INTEGRATION.md # Web, Android, iOS, Server SDK guides
+│   └── SELF_HOSTING_AND_DEPLOYMENT.md # Docker Compose, quickstart & production
 ├── ARCHITECTURE.md            # Deep architectural design and data flow specifications
 ├── ONBOARDING.md              # GTM container & GA4 property user onboarding guide
 ├── DEVELOPMENT.md             # Developer setup, commands, testing & contributing guide

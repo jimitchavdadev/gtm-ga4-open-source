@@ -8,7 +8,8 @@ Featuring a multi-database backend powered by **SeaORM** (PostgreSQL, MySQL, SQL
 
 ## 📚 Essential Project Documentation
 
-- **[AGENTS.md](./AGENTS.md)**: Agent & developer reference guide for any AI agent or IDE (Antigravity, Cursor, Claude Code, Copilot).
+- **[AGENTS.md](./AGENTS.md)**: Agent & developer quickstart guide for any AI agent or IDE (Antigravity, Cursor, Claude Code, Copilot).
+- **[agents/](./agents/)**: Detailed, modular agent knowledge base covering architecture, data models, GTM/GA4 engines, and self-hosting.
 - **[ARCHITECTURE.md](./ARCHITECTURE.md)**: Deep architectural topology, data flow sequence diagrams, and SeaORM schema.
 - **[ONBOARDING.md](./ONBOARDING.md)**: Product onboarding guide for GTM containers, GA4 streams, script snippets, and live verification.
 - **[DEVELOPMENT.md](./DEVELOPMENT.md)**: Developer setup, coding standards, modularity rules, and contribution workflow.
