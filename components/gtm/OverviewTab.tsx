@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PublishModal } from "./PublishModal";
 
 interface OverviewTabProps {
 	tagsCount: number;
@@ -20,16 +21,6 @@ export function OverviewTab({
 	onOpenDiagnostics,
 }: OverviewTabProps) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
-	const [verName, setVerName] = useState(`Release v${versions.length + 1}`);
-	const [verDesc, setVerDesc] = useState("");
-	const [publishing, setPublishing] = useState(false);
-
-	const handlePublish = async () => {
-		setPublishing(true);
-		await onPublish(verName, verDesc);
-		setPublishing(false);
-		setIsModalOpen(false);
-	};
 
 	return (
 		<div className="space-y-6">
@@ -48,9 +39,10 @@ export function OverviewTab({
 							<button
 								type="button"
 								onClick={onOpenDiagnostics}
-								className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-xs hover:bg-gray-50"
+								className="flex items-center gap-1.5 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800 hover:bg-amber-100"
 							>
-								🔍 Tag Diagnostics
+								<span>🩺</span>
+								<span>Tag Diagnostics</span>
 							</button>
 						)}
 						<button
@@ -58,64 +50,59 @@ export function OverviewTab({
 							onClick={() => setIsModalOpen(true)}
 							className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-700"
 						>
-							Publish to Live
+							Publish Workspace
 						</button>
 					</div>
 				</div>
 
-				<div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-					<div className="rounded-lg border border-gray-200 border-l-4 border-l-blue-600 bg-white p-4">
-						<div className="text-xs font-semibold uppercase text-gray-500">
-							Configured Tags
-						</div>
-						<div className="mt-1 text-3xl font-bold text-gray-900">
-							{tagsCount}
-						</div>
+				<div className="mt-6 grid grid-cols-3 gap-4 border-t border-gray-100 pt-6">
+					<div className="rounded-lg bg-gray-50 p-4 text-center">
+						<div className="text-2xl font-bold text-gray-900">{tagsCount}</div>
+						<div className="text-xs font-medium text-gray-500">Active Tags</div>
 					</div>
-					<div className="rounded-lg border border-gray-200 border-l-4 border-l-emerald-600 bg-white p-4">
-						<div className="text-xs font-semibold uppercase text-gray-500">
-							Firing Triggers
-						</div>
-						<div className="mt-1 text-3xl font-bold text-gray-900">
+					<div className="rounded-lg bg-gray-50 p-4 text-center">
+						<div className="text-2xl font-bold text-gray-900">
 							{triggersCount}
 						</div>
+						<div className="text-xs font-medium text-gray-500">Triggers</div>
 					</div>
-					<div className="rounded-lg border border-gray-200 border-l-4 border-l-amber-500 bg-white p-4">
-						<div className="text-xs font-semibold uppercase text-gray-500">
-							Variables & Macros
-						</div>
-						<div className="mt-1 text-3xl font-bold text-gray-900">
+					<div className="rounded-lg bg-gray-50 p-4 text-center">
+						<div className="text-2xl font-bold text-gray-900">
 							{variablesCount}
 						</div>
+						<div className="text-xs font-medium text-gray-500">Variables</div>
 					</div>
 				</div>
 			</div>
 
 			<div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">
-				<h3 className="text-lg font-bold text-gray-900">
-					Published Container Versions
+				<h3 className="text-base font-bold text-gray-900">
+					Container Version History
 				</h3>
-				<div className="mt-4 overflow-x-auto">
+				<div className="mt-4 overflow-hidden rounded-lg border border-gray-200">
 					<table className="w-full text-left text-sm text-gray-600">
-						<thead className="border-b border-gray-200 bg-gray-50 text-xs font-semibold uppercase text-gray-500">
+						<thead className="bg-gray-50 text-xs font-semibold uppercase text-gray-500">
 							<tr>
 								<th className="px-4 py-3">Version</th>
 								<th className="px-4 py-3">Name</th>
 								<th className="px-4 py-3">Description</th>
-								<th className="px-4 py-3">Published At</th>
+								<th className="px-4 py-3">Created</th>
 							</tr>
 						</thead>
-						<tbody className="divide-y divide-gray-100">
+						<tbody className="divide-y divide-gray-200">
 							{versions.length === 0 ? (
 								<tr>
-									<td colSpan={4} className="py-6 text-center text-gray-400">
-										No versions published yet. Click "Publish to Live" above.
+									<td
+										colSpan={4}
+										className="px-4 py-6 text-center text-gray-400"
+									>
+										No versions published yet. Publish your first version above.
 									</td>
 								</tr>
 							) : (
 								versions.map((v) => (
-									<tr key={v.id} className="hover:bg-gray-50">
-										<td className="px-4 py-3 font-bold text-gray-900">
+									<tr key={v.id} className="hover:bg-gray-50/50">
+										<td className="px-4 py-3 font-mono font-bold text-blue-600">
 											v{v.version_number}
 										</td>
 										<td className="px-4 py-3 font-medium text-gray-800">
@@ -135,65 +122,11 @@ export function OverviewTab({
 				</div>
 			</div>
 
-			{isModalOpen && (
-				<div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs">
-					<div className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
-						<h3 className="text-lg font-bold text-gray-900">
-							Publish Container Version
-						</h3>
-						<div className="mt-4 space-y-4">
-							<div>
-								<label
-									htmlFor="ver-name"
-									className="block text-xs font-semibold uppercase text-gray-600"
-								>
-									Version Name
-								</label>
-								<input
-									id="ver-name"
-									type="text"
-									value={verName}
-									onChange={(e) => setVerName(e.target.value)}
-									className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-hidden"
-								/>
-							</div>
-							<div>
-								<label
-									htmlFor="ver-desc"
-									className="block text-xs font-semibold uppercase text-gray-600"
-								>
-									Version Description
-								</label>
-								<textarea
-									id="ver-desc"
-									rows={3}
-									value={verDesc}
-									onChange={(e) => setVerDesc(e.target.value)}
-									placeholder="Describe tags or changes included in this release..."
-									className="mt-1 w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-hidden"
-								/>
-							</div>
-						</div>
-						<div className="mt-6 flex justify-end gap-3">
-							<button
-								type="button"
-								onClick={() => setIsModalOpen(false)}
-								className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-							>
-								Cancel
-							</button>
-							<button
-								type="button"
-								disabled={publishing}
-								onClick={handlePublish}
-								className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50"
-							>
-								{publishing ? "Publishing..." : "Publish"}
-							</button>
-						</div>
-					</div>
-				</div>
-			)}
+			<PublishModal
+				isOpen={isModalOpen}
+				onClose={() => setIsModalOpen(false)}
+				onPublish={onPublish}
+			/>
 		</div>
 	);
 }

@@ -20,6 +20,7 @@ import { TagsTab } from "@/components/gtm/TagsTab";
 import { TriggersTab } from "@/components/gtm/TriggersTab";
 import { VariablesTab } from "@/components/gtm/VariablesTab";
 import { Navbar } from "@/components/Navbar";
+import { OnboardingWizardModal } from "@/components/onboarding/OnboardingWizardModal";
 import { Sidebar } from "@/components/Sidebar";
 import { useAnalyticsData } from "@/hooks/useAnalyticsData";
 
@@ -31,6 +32,7 @@ export default function DashboardPage() {
 	const [workspaceId] = useState("ws_default");
 	const [previewActive, setPreviewActive] = useState(false);
 	const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
+	const [onboardingOpen, setOnboardingOpen] = useState(false);
 	const [toast, setToast] = useState<string | null>(null);
 
 	const showToast = (msg: string) => {
@@ -62,6 +64,7 @@ export default function DashboardPage() {
 					setActiveTab(next ? "PREVIEW" : "OVERVIEW");
 				}}
 				onOpenPublish={() => setActiveTab("OVERVIEW")}
+				onOpenOnboarding={() => setOnboardingOpen(true)}
 			/>
 
 			<div className="flex flex-1">
@@ -156,6 +159,14 @@ export default function DashboardPage() {
 					)}
 				</main>
 			</div>
+
+			<OnboardingWizardModal
+				isOpen={onboardingOpen}
+				onClose={() => setOnboardingOpen(false)}
+				onSendTestHit={data.sendTestHit}
+				initialContainerId={containerId}
+				initialPropertyId={propertyId}
+			/>
 
 			<TagDiagnosticsModal
 				isOpen={diagnosticsOpen}

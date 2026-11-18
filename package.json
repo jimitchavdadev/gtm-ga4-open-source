@@ -10,7 +10,8 @@
     "test": "bun test",
     "lint": "biome check src/ app/ components/ hooks/ tests/",
     "lint:fix": "biome check --write src/ app/ components/ hooks/ tests/",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "verify:lines": "bun scripts/verify-lines.ts"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.6.4",

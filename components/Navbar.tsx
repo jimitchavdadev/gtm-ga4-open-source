@@ -8,6 +8,7 @@ interface NavbarProps {
 	previewActive: boolean;
 	onTogglePreview: () => void;
 	onOpenPublish: () => void;
+	onOpenOnboarding?: () => void;
 }
 
 export function Navbar({
@@ -18,6 +19,7 @@ export function Navbar({
 	previewActive,
 	onTogglePreview,
 	onOpenPublish,
+	onOpenOnboarding,
 }: NavbarProps) {
 	return (
 		<header className="sticky top-0 z-50 flex h-14 w-full items-center justify-between border-b border-gray-200 bg-white px-5 shadow-xs">
@@ -53,7 +55,23 @@ export function Navbar({
 				</div>
 			</div>
 
-			<div className="flex items-center gap-4">
+			<div className="flex items-center gap-3">
+				{onOpenOnboarding && (
+					<button
+						type="button"
+						onClick={onOpenOnboarding}
+						className="flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50/70 px-3 py-1.5 text-xs font-semibold text-blue-700 transition hover:bg-blue-100"
+					>
+						<span>⚡</span>
+						<span>Setup Guide</span>
+					</button>
+				)}
+
+				<div className="flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-800">
+					<span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+					<span>Rust Core</span>
+				</div>
+
 				<div className="rounded-md bg-gray-100 px-3 py-1 text-xs text-gray-600">
 					{platform === "GTM" ? (
 						<>

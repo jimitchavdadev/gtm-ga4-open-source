@@ -1,101 +1,103 @@
 # Open Source Analytics Kit (GTM & GA4 Full Parity)
 
-An open-source, self-hostable analytics kit built in TypeScript with **Next.js (App Router)** and **Tailwind CSS** on [Bun](https://bun.com), providing exact functional parity with Google Tag Manager (GTM) and Google Analytics 4 (GA4), implementing both Free (Standard) and 360 (Enterprise) features.
+An open-source, enterprise-grade, self-hostable analytics and tag management platform built in **TypeScript (Next.js App Router)** and **Rust (Axum + SeaORM)** on [Bun](https://bun.sh), providing 100% functional parity with **Google Tag Manager (GTM)** and **Google Analytics 4 (GA4)**, implementing both Standard and 360 Enterprise tiers.
 
-Tested with SQLite (`bun:sqlite`), strictly verified with Biome linting and TypeScript typechecking, designed with a modular architecture where **every single file is kept under 200 lines**.
+Featuring a multi-database backend powered by **SeaORM** (PostgreSQL, MySQL, SQLite), first-party **Anti-Adblock cloaking**, and custom platform endpoints. Strictly verified with Biome linting, TypeScript compiler checks, and modular architecture where **every single file is kept under 200 lines**.
+
+---
+
+## 📚 Essential Project Documentation
+
+- **[AGENTS.md](./AGENTS.md)**: Agent & developer reference guide for any AI agent or IDE (Antigravity, Cursor, Claude Code, Copilot).
+- **[ARCHITECTURE.md](./ARCHITECTURE.md)**: Deep architectural topology, data flow sequence diagrams, and SeaORM schema.
+- **[ONBOARDING.md](./ONBOARDING.md)**: Product onboarding guide for GTM containers, GA4 streams, script snippets, and live verification.
+- **[DEVELOPMENT.md](./DEVELOPMENT.md)**: Developer setup, coding standards, modularity rules, and contribution workflow.
 
 ---
 
 ## 🚀 Key Modules & Capabilities
 
-### Next.js Frontend & Route Handlers (`app/` & `components/`)
-- **Interactive UI (`components/`)**:
-  - **Platform Switcher**: Seamless toggle between Tag Manager (GTM) and Analytics (GA4).
-  - **GTM UI**: Workspace bar, unsubmitted changes, tag manager with type/priority/consent options, triggers creator, variable manager, Tag Assistant Preview & Debug mode, and 360 Container Zones & Multi-Stage Approvals.
-  - **GA4 UI**: Home dashboard with KPI scorecards, Realtime active users & live wire event stream, standard reports (Traffic Acquisition, Engagement, Ecommerce Monetization, Tech), Attribution Model Comparison (Cross-Channel Last Click vs Markov Chain Removal Effects vs Shapley Value DDA), Funnel Exploration, and Admin (Data streams, custom definitions, email redaction, 360 subproperties).
-- **Next.js App Router Route Handlers (`app/api/`, `app/g/`, `app/mp/`, `app/gtm.js/`)**:
-  - `GET /gtm.js`: Serves client-side container runtime script.
-  - `POST & GET /g/collect`: Ingests single and batch wire protocol hits with email and query parameter redaction.
-  - `POST /mp/collect` & `/debug/mp/collect`: Ingests and validates Measurement Protocol v2 payloads.
-  - `GET & POST /api/v1/workspaces/[id]/entities`: Manages tags, triggers, variables.
-  - `PUT & DELETE /api/v1/entities/[id]`: Entity mutations.
-  - `POST /api/v1/workspaces/[id]/publish`: Version publishing snapshots.
-  - `GET /api/v1/properties/[id]/realtime`: Realtime active users and recent events stream.
-  - `GET /api/v1/properties/[id]/reports/standard`: Acquisition, engagement, ecommerce metrics.
-  - `GET /api/v1/properties/[id]/reports/attribution`: Cross-channel DDA attribution models.
-  - `GET /api/v1/properties/[id]/reports/funnel`: Multi-step checkout funnel analysis.
+### 1. High-Performance Rust Engine (`crates/engine/`)
+- **Axum Web Framework**: High-concurrency event ingestion running on Tokio.
+- **SeaORM Multi-Database Layer**: Native ORM abstraction supporting PostgreSQL, MySQL, and SQLite without raw queries.
+- **Anti-Adblock & FPID Cloaking**: First-party script delivery via `/tracker.js` and AES-256-GCM encrypted first-party device IDs.
+- **Sessionization & Identity Graph**: 30-minute inactivity cutoff, midnight boundary splitting, Blended/Observed/Device-based identity modes.
+- **Data-Driven Attribution (DDA)**: Algorithmic attribution via Markov Chain Removal Effects and Shapley Value cooperative game theory.
 
-### Google Tag Manager (GTM) Core Engine (`src/gtm/`)
-- **Data Layer Engine**: Array monkey-patching, deep-merge v2 algorithm, array overwrite semantics, function execution, and monotonic `uniqueEventId`.
-- **Macro DAG**: Directed acyclic graph variable dependency resolution with cycle detection and per-event memoization.
-- **Predicates & Triggers**: 11 evaluation operators (CSS selector, regex, numeric comparisons) and Trigger Groups.
-- **Tag Scheduler & Consent Mode v2**: Priority sorting, Setup/Primary/Teardown sequencing, frequency capping, and `gcs`/`gcd` consent encoding across 7 consent types.
-- **GTM 360 Enterprise**: Multi-container Zones, multi-stage approval workflows with inline comments, and authenticated environments (`gtm_auth`).
+### 2. Next.js Presentation Gateway (`app/` & `components/`)
+- **Strict Separation of Concerns**: Next.js is pure frontend presentation and client tracker serving; all DB queries are handled by Rust.
+- **Gateway Reverse Proxying**: `next.config.mjs` transparently rewrites custom endpoints (`/api/events/*`, `/api/analytics/*`, `/api/tag-manager/*`) to the Rust engine.
+- **Custom First-Party Endpoints**: First-party paths replace Google-branded URLs (`/api/events/collect`, `/api/events/batch`, `/tracker.js`) while maintaining backward-compatible aliases (`/g/collect`, `/mp/collect`, `/gtm.js`).
+- **Interactive Dashboards**:
+  - **GTM**: Container zones, unsubmitted changes, visual tag/trigger/variable builders, Tag Assistant preview, multi-stage approvals.
+  - **GA4**: Realtime active users, standard acquisition & engagement reports, funnel exploration, attribution model comparisons, custom definitions, and BigQuery export.
+  - **Setup & Onboarding Wizard**: Guided 4-step modal for container creation, snippet generation, consent configuration, and live verification.
 
-### Server-Side GTM & FPID (`src/server-gtm/`)
-- **Wire Protocol Parsing**: Single and newline-separated batch `/g/collect` wire requests into canonical format.
-- **Transformation Pipeline**: Allowlisting, blocklisting, SHA-256 hashing, and payload augmentation.
-- **First-Party Device ID**: AES-256-GCM encrypted FPID generation and HttpOnly, Secure cookie management.
-
-### Google Analytics 4 (GA4) Core Engine (`src/ga4/`)
-- **Sessionization**: 30-minute inactivity timeout, midnight session boundary splitting, engagement qualification, engagement/bounce rates.
-- **Identity Graph**: Blended, Observed, and Device-Based reporting identity modes.
-- **Ecommerce Engine**: Validation of 14 standard GA4 ecommerce events, required purchase parameters, and currency validation.
-- **Custom Definitions**: Enforces Free vs 360 quota limits and calculated metrics formula evaluation.
-- **Attribution & DDA**: Cross-channel Last Click, Markov Chain Removal Effects transition graph analysis, and Shapley Value cooperative game theory credit.
-- **Predictive Audiences**: Custom audience evaluation, predictive ML metrics (Purchase Probability, Churn Probability), and Audience Triggers.
-- **Enterprise Hierarchy**: 360 subproperty routing and Roll-up Property cross-property aggregation (`_source_property_id`).
-- **Data Redaction**: Client-side & server-side regex email scrubbing and sensitive query parameter stripping.
+### 3. Google Tag Manager (GTM) Core Engine (`src/gtm/`)
+- **Data Layer Engine**: Deep-merge v2 algorithm, array overwrite semantics, and monotonic `uniqueEventId`.
+- **Macro DAG**: Directed acyclic graph variable dependency resolution with cycle detection and memoization.
+- **Consent Mode v2**: Evaluates `ad_storage`, `analytics_storage`, `ad_user_data`, and `ad_personalization` with `gcs`/`gcd` encoding.
 
 ---
 
-## 🛠️ Getting Started
+## 🛠️ Quickstart
 
 ### Prerequisites
 - [Bun](https://bun.sh/) (v1.4.0 or later)
+- [Rust](https://rustup.rs/) (v1.80 or later)
 
 ### Installation
 ```bash
+# Clone the repository
+git clone https://github.com/your-org/gtm-ga4-open-source.git
+cd gtm-ga4-open-source
+
+# Install dependencies
 bun install
 ```
 
-### Run Next.js Development Server
-```bash
-bun run dev
-```
+### Start the Servers
 
-Server runs on `http://localhost:3000`.
+1. **Start the Rust Analytics Engine (:8080)**:
+   ```bash
+   cargo run --manifest-path crates/engine/Cargo.toml
+   ```
 
-### Production Build & Start
-```bash
-bun run build
-bun run start
-```
+2. **Start the Next.js Frontend (:3000)**:
+   ```bash
+   bun run dev
+   ```
 
-### Testing & Quality Checks
-Run all 44 unit & integration tests across 11 modules:
+Open [http://localhost:3000](http://localhost:3000) in your browser.
+
+---
+
+## 🧪 Testing & Quality Gates
+
+Run all automated test suites and linters:
+
 ```bash
+# Run all TypeScript frontend integration tests (50+ tests)
 bun test
-```
 
-Run linter and formatter:
-```bash
-bun run lint:fix
-```
+# Run all Rust backend integration tests (40+ tests)
+cargo test --manifest-path crates/engine/Cargo.toml
 
-Run TypeScript strict typecheck:
-```bash
+# Biome code formatting & linting (0 errors, 0 warnings)
+bun run lint
+
+# TypeScript strict typechecking (0 errors)
 bun run typecheck
 ```
 
 Verify that no file exceeds the 200-line modularity limit:
 ```bash
-find src app components hooks tests index.ts -type f \( -name "*.ts" -o -name "*.tsx" \) -exec wc -l {} + | sort -n
+find src app components hooks tests crates/engine/src -type f \( -name "*.ts" -o -name "*.tsx" -o -name "*.rs" \) -exec wc -l {} + | sort -n
 ```
 
 ---
 
 ## 🌿 Git Branching Strategy
 - **`main`**: Production trunk. Kept completely untouched at initial release.
-- **`staging`**: Integration branch for all merged features and route implementations.
-- Feature branches (e.g. `feat/nextjs-tailwind-migration`) branch from and merge exclusively into `staging`.
+- **`staging`**: Primary integration branch for all merged features and route implementations.
+- Feature branches branch from and merge exclusively into `staging`.
