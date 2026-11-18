@@ -7,6 +7,22 @@ const corsHeaders = {
 	"Access-Control-Allow-Headers": "Content-Type",
 };
 
+export async function handleValidationRequest(req: Request): Promise<Response> {
+	const url = new URL(req.url);
+	const apiSecret = url.searchParams.get("api_secret") ?? undefined;
+	const measurementId = url.searchParams.get("measurement_id") ?? undefined;
+	const body = await req.json().catch(() => null);
+
+	const validation = MeasurementProtocolValidator.validate(
+		{ api_secret: apiSecret, measurement_id: measurementId },
+		body,
+	);
+	return Response.json(
+		{ validationMessages: validation.validationMessages },
+		{ status: 200, headers: corsHeaders },
+	);
+}
+
 export async function handleMeasurementProtocol(
 	req: Request,
 ): Promise<Response> {
@@ -29,8 +45,9 @@ export async function handleMeasurementProtocol(
 		);
 	}
 	for (const event of validation.canonicalEvents) {
+		const uniqueId = `raw_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
 		eventRepo.insertRawEvent({
-			id: event.id,
+			id: uniqueId,
 			property_id: "prop_1",
 			stream_id: "stream_1",
 			event_name: event.name,

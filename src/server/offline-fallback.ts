@@ -1,6 +1,9 @@
 import { entityRepo, eventRepo } from "@/src/db/instance";
 import { handleCollectRequest } from "@/src/server/collect-handler";
-import { handleMeasurementProtocol } from "./mp-fallback";
+import {
+	handleMeasurementProtocol,
+	handleValidationRequest,
+} from "./mp-fallback";
 
 const corsHeaders = {
 	"Access-Control-Allow-Origin": "*",
@@ -21,12 +24,22 @@ export async function handleOfflineTestFallback(
 			{ headers: corsHeaders },
 		);
 	}
-	if (pathname === "/g/collect" || pathname === "/api/v1/telemetry") {
+	if (
+		pathname === "/g/collect" ||
+		pathname === "/api/v1/telemetry" ||
+		pathname.endsWith("/events/collect")
+	) {
 		const eventUrl = new URL(req.url);
 		await handleCollectRequest(req, eventUrl, eventRepo);
 		return new Response(null, { status: 204, headers: corsHeaders });
 	}
-	if (pathname === "/mp/collect" || pathname === "/debug/mp/collect") {
+	if (
+		pathname === "/debug/mp/collect" ||
+		pathname.endsWith("/events/validate")
+	) {
+		return handleValidationRequest(req);
+	}
+	if (pathname === "/mp/collect" || pathname.endsWith("/events/batch")) {
 		return handleMeasurementProtocol(req);
 	}
 	if (pathname.includes("/workspaces/") && pathname.endsWith("/entities")) {

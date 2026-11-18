@@ -146,7 +146,7 @@ export function useAnalyticsData({
 	};
 
 	const sendTestHit = async (useCloaked = false) => {
-		const endpoint = useCloaked ? "/api/v1/telemetry" : "/g/collect";
+		const endpoint = useCloaked ? "/api/v1/telemetry" : "/api/events/collect";
 		await fetch(
 			`${endpoint}?v=2&tid=${containerId}&cid=user_${Date.now()}&en=purchase&ep.value=149.99&ep.currency=USD`,
 			{ method: "POST" },
@@ -155,7 +155,7 @@ export function useAnalyticsData({
 		onNotify(
 			useCloaked
 				? "Live hit received via cloaked endpoint!"
-				: "Wire hit received live in Realtime & BigQuery!",
+				: "Wire hit received live via /api/events/collect!",
 		);
 	};
 
