@@ -1,9 +1,15 @@
+export type PlatformType = "web" | "android" | "ios" | "server";
+
 export interface OnboardingConfig {
 	containerId: string;
 	propertyId: string;
 	measurementId: string;
 	streamName: string;
 	streamUrl: string;
+	platformType: PlatformType;
+	appPackageName: string;
+	bundleId: string;
+	appVersion: string;
 	analyticsStorage: "granted" | "denied";
 	adStorage: "granted" | "denied";
 	adUserData: "granted" | "denied";
@@ -17,4 +23,5 @@ export interface VerificationResult {
 	timestamp?: string;
 	eventId?: string;
 	gcs?: string;
+	platform?: string;
 }

@@ -40,35 +40,43 @@ Featuring a multi-database backend powered by **SeaORM** (PostgreSQL, MySQL, SQL
 
 ---
 
-## 🛠️ Quickstart
+## 🛠️ Minimal-Step Self-Hosting & Quickstart
 
-### Prerequisites
-- [Bun](https://bun.sh/) (v1.4.0 or later)
-- [Rust](https://rustup.rs/) (v1.80 or later)
-
-### Installation
+### Option 1: 1-Command Docker Compose (Production Ready)
 ```bash
-# Clone the repository
-git clone https://github.com/your-org/gtm-ga4-open-source.git
+# Clone and start full stack in background
+git clone https://github.com/jimitchavda/gtm-ga4-open-source.git
 cd gtm-ga4-open-source
+docker compose up -d
+```
+Access the dashboard at **`http://localhost:3000`**.
 
-# Install dependencies
-bun install
+### Option 2: 1-Command Native Quickstart (Development)
+```bash
+./quickstart.sh
 ```
 
-### Start the Servers
+### Option 3: Manual Step-by-Step
+```bash
+# Install frontend dependencies
+bun install
 
-1. **Start the Rust Analytics Engine (:8080)**:
-   ```bash
-   cargo run --manifest-path crates/engine/Cargo.toml
-   ```
+# Start Rust Analytics Engine (:8080)
+cargo run --manifest-path crates/engine/Cargo.toml
 
-2. **Start the Next.js Frontend (:3000)**:
-   ```bash
-   bun run dev
-   ```
+# In a separate terminal, start Next.js Frontend (:3000)
+bun run dev
+```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+---
+
+## 📱 Multi-Platform Integration
+
+- **Web**: First-party `/tracker.js` script with anti-adblock cloaking.
+- **Android**: Direct Kotlin singleton (`OpenAnalytics.kt`) and batch JSON.
+- **iOS**: Swift `URLSession` singleton (`OpenAnalytics.swift`) and batch JSON.
+- **Server**: REST API batch ingestion (`/api/events/batch`) with API secrets.
+- **Interactive Wizard**: Open the dashboard and click **"⚡ Setup Guide"** to get copy-paste code snippets customized for your project.
 
 ---
 

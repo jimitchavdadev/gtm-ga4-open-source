@@ -53,6 +53,10 @@ Every pull request and commit must strictly adhere to these 5 invariants:
 - **`staging`**: Primary integration branch for merged features.
 - **`feat/*`** or **`fix/*`**: Work on dedicated feature branches branched from `staging`.
 
+### Invariant 6: Continuous Documentation Synchronization
+- **MANDATORY**: Always update the repository's `.md` documentation files (`AGENTS.md`, `ARCHITECTURE.md`, `ONBOARDING.md`, `DEVELOPMENT.md`, `README.md`) constantly based on progress made.
+- Documentation is treated with the same discipline as code. Whenever endpoints, models, onboarding flows, or scripts change, update the corresponding documentation immediately.
+
 ---
 
 ## 3. Working with the Rust Engine (`crates/engine`)

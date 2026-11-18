@@ -197,3 +197,22 @@ erDiagram
 4. **Consent Mode v2**:
    - Supports all 7 consent types: `ad_storage`, `analytics_storage`, `ad_user_data`, `ad_personalization`, `functionality_storage`, `personalization_storage`, `security_storage`.
    - Encodes and decodes Google-standard `gcs` (e.g. `G100`, `G111`) and `gcd` granular signal strings.
+
+---
+
+## 6. Multi-Platform Ingestion & Deployment Topology
+
+### 6.1 Platform Ingestion Matrix
+- **Web**: Dispatches wire payloads (`v=2&tid=...&cid=...&en=page_view`) through `/tracker.js` first-party script.
+- **Android**: Dispatches hits with `_p=android&aid=<package_name>` via direct HTTP or Measurement Protocol v2 batch JSON.
+- **iOS**: Dispatches hits with `_p=ios&bundle_id=<bundle_id>` via `URLSession` or Measurement Protocol v2 batch JSON.
+- **Server**: Dispatches JSON hits with API secrets directly to `/api/events/batch`.
+
+### 6.2 1-Command Self-Hosting Container Topology
+```
+[Host System]
+  ├── docker-compose.yml
+  ├── Service 'engine': Rust Axum (Port 8080) + SeaORM -> Volume /data/analytics.db
+  └── Service 'web': Next.js Gateway (Port 3000) -> Proxies /api/* to engine:8080
+```
+

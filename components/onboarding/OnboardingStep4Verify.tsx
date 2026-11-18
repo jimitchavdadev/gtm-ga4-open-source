@@ -27,6 +27,7 @@ export function OnboardingStep4Verify({
 				timestamp: now,
 				eventId: evId,
 				gcs: config.analyticsStorage === "granted" ? "G111" : "G100",
+				platform: config.platformType,
 			});
 		} catch (err: any) {
 			setResult({
@@ -36,6 +37,13 @@ export function OnboardingStep4Verify({
 		}
 	};
 
+	const eventName =
+		config.platformType === "web"
+			? "page_view"
+			: config.platformType === "server"
+				? "server_event"
+				: "app_open";
+
 	return (
 		<div className="space-y-4">
 			<div>
@@ -44,7 +52,7 @@ export function OnboardingStep4Verify({
 				</h4>
 				<p className="text-xs text-gray-500">
 					Emit a synthetic test hit to verify the pipeline from Next.js Gateway
-					through the Rust Core Engine.
+					through the Rust Core Engine for {config.platformType.toUpperCase()}.
 				</p>
 			</div>
 
@@ -56,7 +64,7 @@ export function OnboardingStep4Verify({
 							Ready to Test Ingestion Pipeline
 						</div>
 						<p className="mx-auto max-w-sm text-xs text-gray-500">
-							We will send an event payload to{" "}
+							Emitting a test hit to{" "}
 							<code className="text-blue-600">/api/events/collect</code> to
 							confirm live wire-protocol ingestion.
 						</p>
@@ -65,7 +73,7 @@ export function OnboardingStep4Verify({
 							onClick={handleTest}
 							className="rounded-lg bg-blue-600 px-5 py-2.5 text-xs font-semibold text-white shadow-sm hover:bg-blue-700"
 						>
-							Send Test Ping Now
+							Send Test Ping ({config.platformType.toUpperCase()})
 						</button>
 					</div>
 				)}
@@ -87,7 +95,13 @@ export function OnboardingStep4Verify({
 						</div>
 						<div className="mx-auto max-w-md rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-left font-mono text-xs text-emerald-950">
 							<div>
-								Event: <strong className="text-emerald-900">page_view</strong>
+								Event: <strong className="text-emerald-900">{eventName}</strong>
+							</div>
+							<div>
+								Platform:{" "}
+								<strong className="text-emerald-900">
+									{config.platformType.toUpperCase()}
+								</strong>
 							</div>
 							<div>Property: {config.measurementId}</div>
 							<div>Container: {config.containerId}</div>

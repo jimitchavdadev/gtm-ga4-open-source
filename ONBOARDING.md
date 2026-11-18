@@ -1,82 +1,52 @@
-# ONBOARDING.md — Complete Setup & Onboarding Guide
+# ONBOARDING.md — Setup & Self-Hosting Guide
 
-This document provides a comprehensive, product-level onboarding guide for developers, system administrators, and platform users setting up **Open Source Google Tag Manager (GTM)** and **Google Analytics 4 (GA4)**.
-
----
-
-## 1. Quickstart Onboarding Matrix
-
-| Persona | Objective | Key Steps |
-| :--- | :--- | :--- |
-| **Developer / Admin** | Host and run the platform locally or on a server | Install Bun & Rust, configure `DATABASE_URL`, run `cargo run` and `bun run dev` |
-| **GTM User** | Manage tags, triggers, variables, and deploy to sites | Create Container, embed `<script src="/tracker.js">`, configure tags, publish |
-| **GA4 User** | Collect web analytics, measure conversions, view funnels | Create Data Stream, configure Measurement ID, verify live event ingestion |
+This document provides a complete, product-level onboarding guide for developers, system administrators, and platform users setting up **Open Source Google Tag Manager (GTM)** and **Google Analytics 4 (GA4)** across **Web, Android, iOS, and Server** environments.
 
 ---
 
-## 2. Developer & Infrastructure Setup
+## 1. Quickstart Matrix & Minimal-Step Self-Hosting
 
-### Prerequisites
-- **Bun** (v1.4.0+): [https://bun.sh](https://bun.sh)
-- **Rust & Cargo** (v1.80+): [https://rustup.rs](https://rustup.rs)
-- (Optional) **PostgreSQL** (v14+) or **MySQL** (v8+) if not using SQLite.
+Deploy and self-host the entire platform with minimal steps using either Docker Compose or the local quickstart script:
 
-### Step-by-Step Installation
+### Option A: 1-Command Docker Compose (Production Ready)
 
 ```bash
-# 1. Clone the repository
-git clone https://github.com/your-org/gtm-ga4-open-source.git
+# 1. Clone repository
+git clone https://github.com/jimitchavda/gtm-ga4-open-source.git
 cd gtm-ga4-open-source
 
-# 2. Install frontend dependencies
-bun install
-
-# 3. Configure environment variables (optional, defaults provided)
-cp .env.example .env 2>/dev/null || cat << 'EOF' > .env
-PORT=3000
-RUST_ENGINE_URL=http://localhost:8080
-DATABASE_URL=sqlite://analytics.db?mode=rwc
-EOF
-
-# 4. Start the Rust Analytics Core Engine (:8080)
-cargo run --manifest-path crates/engine/Cargo.toml
-
-# 5. In a second terminal, start the Next.js Frontend (:3000)
-bun run dev
+# 2. Start full stack in background (Rust Engine + Next.js Gateway + SQLite Volume)
+docker compose up -d
 ```
+Access the platform at `http://localhost:3000`.
 
-Visit `http://localhost:3000` to access the unified platform dashboard.
+### Option B: 1-Command Native Quickstart (Dev / Evaluation)
+
+```bash
+# Automatically checks toolchain, installs dependencies, builds Rust engine & starts both servers
+./quickstart.sh
+```
 
 ---
 
-## 3. Platform User Onboarding (Step-by-Step)
+## 2. Platform User Onboarding Flow
 
-The platform provides a guided 4-step onboarding wizard accessible directly from the dashboard header via the **"⚡ Setup Guide"** button.
+The platform includes an interactive, guided 4-step wizard accessible from the top navbar via the **"⚡ Setup Guide"** button:
 
 ```mermaid
 flowchart LR
-    Step1["1. Container & Stream Setup"] --> Step2["2. Install Script Snippet"]
-    Step2 --> Step3["3. Configure Consent & Identity"]
+    Step1["1. Platform & Stream Setup"] --> Step2["2. Install Tracking Code"]
+    Step2 --> Step3["3. Configure Privacy & Consent"]
     Step3 --> Step4["4. Live Ingestion Verification"]
 ```
 
 ---
 
-### Step 1: Container & Stream Setup
+## 3. Client Integration Guides
 
-1. **Tag Manager Container**:
-   - Assign a Container ID (default: `GTM-OPENSOURCE`).
-   - Choose target environment: **Web** (client-side DOM tracking) or **Server** (first-party proxy container).
-2. **Analytics Data Stream**:
-   - Assign a Measurement ID (default: `G-TESTSTREAM`).
-   - Define Stream Name (e.g., `Production Web Store`) and Stream URL (`https://yourdomain.com`).
-   - Enhanced measurement is enabled by default (Page views, Scrolls, Outbound clicks, Site search, Video engagement, File downloads).
+### 3.1 Website Integration (JavaScript / HTML)
 
----
-
-### Step 2: Install Tracking Snippet on Your Website
-
-Place the tracking snippet inside the `<head>` tag of every page on your website.
+Place the tracking snippet inside the `<head>` tag of every HTML page.
 
 #### Recommended: First-Party Custom Snippet (Anti-Adblock Resilient)
 ```html
@@ -93,15 +63,13 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+dl:'';j.async=true;j.src=
 
 #### Noscript Fallback (Place immediately after the opening `<body>` tag)
 ```html
-<!-- Open Source Tag Manager (noscript) -->
 <noscript>
   <iframe src="/_trk/ns.html?id=GTM-OPENSOURCE"
   height="0" width="0" style="display:none;visibility:hidden"></iframe>
 </noscript>
-<!-- End Open Source Tag Manager (noscript) -->
 ```
 
-#### Alternative: Direct GA4 Measurement Protocol (gtag.js style)
+#### Direct GA4 Measurement Protocol (gtag.js style)
 ```html
 <script async src="/tracker.js?id=G-TESTSTREAM"></script>
 <script>
@@ -112,60 +80,152 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+dl:'';j.async=true;j.src=
 </script>
 ```
 
-> [!TIP]
-> **Why `/tracker.js` instead of `googletagmanager.com`?**
-> Standard ad-blockers and privacy extensions block domain names containing `google-analytics.com` and `googletagmanager.com`. Serving `/tracker.js` directly from your own domain makes your tracking completely first-party, resilient, and compliant with Safari ITP.
+---
+
+### 3.2 Android App Integration (Kotlin)
+
+Integrate analytics directly into your Android application without external third-party SDK dependencies:
+
+```kotlin
+// OpenAnalytics.kt — Android Analytics Singleton
+import java.net.HttpURLConnection
+import java.net.URL
+import java.util.UUID
+
+object OpenAnalytics {
+    private const val ENDPOINT = "https://your-analytics-domain.com/api/events/collect"
+    private const val MEASUREMENT_ID = "G-TESTSTREAM"
+    private val clientId = UUID.randomUUID().toString()
+
+    fun logEvent(eventName: String, params: Map<String, String> = emptyMap()) {
+        Thread {
+            try {
+                val query = StringBuilder("v=2")
+                    .append("&tid=").append(MEASUREMENT_ID)
+                    .append("&cid=").append(clientId)
+                    .append("&en=").append(eventName)
+                    .append("&_p=android")
+                    .append("&aid=").append("com.example.app")
+
+                params.forEach { (k, v) ->
+                    query.append("&ep.").append(k).append("=").append(v)
+                }
+
+                val conn = URL("$ENDPOINT?$query").openConnection() as HttpURLConnection
+                conn.requestMethod = "POST"
+                conn.connectTimeout = 3000
+                conn.responseCode // Emits hit (204 No Content)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }.start()
+    }
+}
+```
+
+**Usage in Activity / ViewModel**:
+```kotlin
+// Log app launch
+OpenAnalytics.logEvent("app_open")
+
+// Log ecommerce conversion
+OpenAnalytics.logEvent("purchase", mapOf(
+    "currency" to "USD",
+    "value" to "99.00",
+    "transaction_id" to "T_1001"
+))
+```
 
 ---
 
-### Step 3: Configure Consent Mode v2 & Reporting Identity
+### 3.3 iOS App Integration (Swift)
 
-1. **Consent Mode v2 Defaults**:
-   - Set initial consent state before banner interaction:
-     - `analytics_storage`: `granted` or `denied`
-     - `ad_storage`: `granted` or `denied`
-     - `ad_user_data`: `granted` or `denied`
-     - `ad_personalization`: `granted` or `denied`
-   - When denied, the platform automatically strips cookies and transmits cookieless pings encoded with `gcs` (e.g. `G100`).
-2. **Reporting Identity Mode**:
-   - **Blended (Recommended)**: Evaluates User ID, Device ID (FPID/Cookie), and AI-modeled behavior when consent is denied.
-   - **Observed**: Uses User ID first, falling back to Device ID.
-   - **Device-Based**: Uses only client-side Device ID (FPID/Cookie), ignoring User ID.
+Integrate analytics directly into your iOS project using standard Swift `URLSession`:
+
+```swift
+// OpenAnalytics.swift — iOS Analytics Singleton
+import Foundation
+
+class OpenAnalytics {
+    static let shared = OpenAnalytics()
+    private let endpoint = "https://your-analytics-domain.com/api/events/collect"
+    private let measurementId = "G-TESTSTREAM"
+    private let clientId = UUID().uuidString
+
+    func logEvent(name: String, parameters: [String: String] = [:]) {
+        var components = URLComponents(string: endpoint)!
+        var items = [
+            URLQueryItem(name: "v", value: "2"),
+            URLQueryItem(name: "tid", value: measurementId),
+            URLQueryItem(name: "cid", value: clientId),
+            URLQueryItem(name: "en", value: name),
+            URLQueryItem(name: "_p", value: "ios"),
+            URLQueryItem(name: "bundle_id", value: "com.example.app")
+        ]
+        parameters.forEach { items.append(URLQueryItem(name: "ep.\($0.key)", value: $0.value)) }
+        components.queryItems = items
+
+        var request = URLRequest(url: components.url!)
+        request.httpMethod = "POST"
+        URLSession.shared.dataTask(with: request).resume()
+    }
+}
+```
+
+**Usage in SwiftUI / UIKit**:
+```swift
+// In onAppear or AppDelegate
+OpenAnalytics.shared.logEvent(name: "app_open")
+
+// Log conversion
+OpenAnalytics.shared.logEvent(name: "purchase", parameters: [
+    "currency": "USD",
+    "value": "149.00"
+])
+```
 
 ---
 
-### Step 4: Live Verification & Testing
+### 3.4 Server-Side & Measurement Protocol Batch Ingestion
 
-Once your tracking snippet is installed, verify live signal ingestion:
-
-1. Open the **Setup Guide** modal or go to **Analytics (GA4) > Realtime**.
-2. Click **"Send Verification Ping"** to emit a synthetic event payload to `/api/events/collect`.
-3. Verify that the **Signal Ingestion Status** transitions from *Waiting for Signal* to **Active (Signal Received)**.
-4. Confirm the incoming hit appears in the **Live Event Stream** with:
-   - Event Name: `page_view`
-   - Client ID: `test_client_...`
-   - Status: HTTP 204 No Content
-   - Ingestion Latency: `< 15ms`
-
----
-
-## 4. Verification & Testing Checklist
-
-Run all automated quality suites to verify system integrity before deploying to production:
+For backend microservices, payments, and offline CRM imports, dispatch batches to `/api/events/batch`:
 
 ```bash
-# 1. Run all 50+ TypeScript frontend integration tests
-bun test
+curl -X POST "https://your-analytics-domain.com/api/events/batch?measurement_id=G-TESTSTREAM" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "client_id": "srv_client_100",
+    "events": [
+      {
+        "name": "subscription_renewed",
+        "params": {
+          "currency": "USD",
+          "value": 29.00
+        }
+      }
+    ]
+  }'
+```
 
-# 2. Run all 40+ Rust backend integration tests
-cargo test --manifest-path crates/engine/Cargo.toml
+---
 
-# 3. Check for Biome lint errors
-bun run lint
+## 4. Live Verification & Testing
 
-# 4. Check strict TypeScript type safety
-bun run typecheck
+Verify that your tracking signal is arriving in real-time:
 
-# 5. Verify file length invariants (< 200 lines per file)
-bun run verify:lines
+1. Click **"⚡ Setup Guide"** in the top navigation bar.
+2. Select your platform (**Web**, **Android**, **iOS**, or **Server**).
+3. Navigate to **Step 4: Live Verification** and click **"Send Test Ping"**.
+4. Confirm:
+   - Status code: `HTTP 204 No Content`
+   - Ingestion latency: `< 15ms`
+   - Active users incremented in **Analytics (GA4) > Realtime**.
+
+---
+
+## 5. Automated Verification Checklist
+
+```bash
+# Run all quality checks before production release
+bun test && bun run lint && bun run typecheck && bun run verify:lines && cargo test --manifest-path crates/engine/Cargo.toml
 ```

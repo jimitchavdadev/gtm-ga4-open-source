@@ -47,6 +47,8 @@ When modifying or adding code, you **MUST** uphold these non-negotiable rules:
 | **SeaORM Everywhere** | All database interactions in Rust must use SeaORM models, entities, and query builders. | `crates/engine/src/db/sea/` |
 | **Zero Errors & Warnings** | No compiler errors, no lint warnings, no type errors. | `cargo test && bun test && bun run lint && bun run typecheck` |
 | **Git Branch Discipline** | Never commit directly to `main`. Create feature branches and merge into `staging`. | `git status` |
+| **Continuous Docs Sync** | **MANDATORY**: Constantly update `.md` files (`AGENTS.md`, `ARCHITECTURE.md`, `ONBOARDING.md`, `DEVELOPMENT.md`, `README.md`) based on progress made. Documentation must never lag behind code. | Review modified `.md` files |
+| **Multi-Platform Parity** | Support Web, Android (Kotlin), iOS (Swift), and Server ingestion. | Test `/api/events/collect` with `_p=android`, `_p=ios` |
 
 ---
 
@@ -121,6 +123,10 @@ gtm-ga4-open-source/
 ## 5. Standard Commands Cheat Sheet
 
 ```bash
+# Minimal-Step Quickstart & Self-Hosting
+./quickstart.sh                  # 1-command setup & run (Bun + Cargo)
+docker compose up -d             # 1-command Docker production stack
+
 # Frontend & TypeScript (Bun)
 bun install                      # Install frontend dependencies
 bun test                         # Run all 50+ Bun integration tests

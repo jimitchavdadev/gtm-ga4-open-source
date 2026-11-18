@@ -1,0 +1,25 @@
+# Build Stage
+FROM rust:1.80-slim-bullseye AS builder
+
+WORKDIR /usr/src/app
+RUN apt-get update && apt-get install -y pkg-config libssl-dev ca-certificates && rm -rf /var/lib/apt/lists/*
+
+COPY Cargo.toml Cargo.lock ./
+COPY crates/ crates/
+
+RUN cargo build --release --manifest-path crates/engine/Cargo.toml
+
+# Production Runtime
+FROM debian:bullseye-slim
+
+WORKDIR /app
+RUN apt-get update && apt-get install -y ca-certificates wget libssl1.1 && rm -rf /var/lib/apt/lists/*
+RUN mkdir -p /data
+
+COPY --from=builder /usr/src/app/target/release/analytics-engine /usr/local/bin/analytics-engine
+
+EXPOSE 8080
+ENV PORT=8080
+ENV DATABASE_URL="sqlite:///data/analytics.db?mode=rwc"
+
+CMD ["analytics-engine"]

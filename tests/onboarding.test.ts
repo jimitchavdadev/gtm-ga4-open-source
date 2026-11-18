@@ -1,51 +1,67 @@
 import { describe, expect, it } from "bun:test";
+import {
+	getAndroidSnippets,
+	getIosSnippets,
+	getWebSnippets,
+} from "../components/onboarding/snippets";
+import type { OnboardingConfig } from "../components/onboarding/types";
 import { proxyToRust } from "../src/server/rust-proxy";
 
-describe("Onboarding & Setup Flow Integration", () => {
-	it("generates correct first-party cloaked snippet for GTM container", () => {
-		const containerId = "GTM-TEST123";
-		const snippet = `(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
-new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
-j=d.createElement(s),dl=l!='dataLayer'?'&l='+dl:'';j.async=true;j.src=
-'/tracker.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-})(window,document,'script','dataLayer','${containerId}');`;
+describe("Onboarding & Multi-Platform Flow Integration", () => {
+	const sampleConfig: OnboardingConfig = {
+		containerId: "GTM-TEST123",
+		propertyId: "prop_1",
+		measurementId: "G-TESTSTREAM",
+		streamName: "Mobile Store",
+		streamUrl: "https://example.com",
+		platformType: "web",
+		appPackageName: "com.test.androidapp",
+		bundleId: "com.test.iosapp",
+		appVersion: "1.0.0",
+		analyticsStorage: "granted",
+		adStorage: "granted",
+		adUserData: "granted",
+		adPersonalization: "granted",
+		reportingIdentity: "blended",
+	};
 
-		expect(snippet).toContain(containerId);
-		expect(snippet).toContain("/tracker.js?id=");
-		expect(snippet).not.toContain("googletagmanager.com");
+	it("generates correct first-party cloaked snippet for Web container", () => {
+		const snippets = getWebSnippets(sampleConfig);
+		expect(snippets.custom).toContain(sampleConfig.containerId);
+		expect(snippets.custom).toContain("/tracker.js?id=");
+		expect(snippets.custom).not.toContain("googletagmanager.com");
 	});
 
-	it("generates correct noscript fallback iframe pointing to first-party cloaked endpoint", () => {
-		const containerId = "GTM-ENTERPRISE";
-		const noscript = `<noscript><iframe src="/_trk/ns.html?id=${containerId}" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>`;
-
-		expect(noscript).toContain(containerId);
-		expect(noscript).toContain("/_trk/ns.html?id=");
-		expect(noscript).not.toContain("google");
+	it("generates correct Kotlin snippet for Android application", () => {
+		const snippets = getAndroidSnippets(sampleConfig);
+		expect(snippets.kotlin).toContain(sampleConfig.measurementId);
+		expect(snippets.kotlin).toContain(sampleConfig.appPackageName);
+		expect(snippets.kotlin).toContain("_p=android");
 	});
 
-	it("emits live verification ping to custom /api/events/collect and validates ingestion", async () => {
-		const testPropertyId = "G-TESTSTREAM";
+	it("generates correct Swift snippet for iOS application", () => {
+		const snippets = getIosSnippets(sampleConfig);
+		expect(snippets.swift).toContain(sampleConfig.measurementId);
+		expect(snippets.swift).toContain(sampleConfig.bundleId);
+		expect(snippets.swift).toContain('URLQueryItem(name: "_p", value: "ios")');
+	});
+
+	it("ingests Android app_open event hit via custom /api/events/collect", async () => {
 		const req = new Request(
-			`http://localhost:3000/api/events/collect?v=2&tid=${testPropertyId}&cid=onboard_client_1&en=page_view&gcs=G111`,
+			`http://localhost:3000/api/events/collect?v=2&tid=${sampleConfig.measurementId}&cid=android_client_1&en=app_open&_p=android&aid=${sampleConfig.appPackageName}`,
 			{ method: "POST" },
 		);
-
 		const res = await proxyToRust(req, "/api/events/collect");
 		expect(res.status).toBe(204);
+	});
 
-		// Verify that the realtime route reflects the active stream
-		const realtimeReq = new Request(
-			"http://localhost:3000/api/analytics/properties/prop_1/realtime",
+	it("ingests iOS app_open event hit via custom /api/events/collect", async () => {
+		const req = new Request(
+			`http://localhost:3000/api/events/collect?v=2&tid=${sampleConfig.measurementId}&cid=ios_client_1&en=app_open&_p=ios&bundle_id=${sampleConfig.bundleId}`,
+			{ method: "POST" },
 		);
-		const realtimeRes = await proxyToRust(
-			realtimeReq,
-			"/api/analytics/properties/prop_1/realtime",
-		);
-		expect(realtimeRes.status).toBe(200);
-		const data = (await realtimeRes.json()) as any;
-		expect(data.propertyId).toBe("prop_1");
-		expect(data.activeUsersLast30Min).toBeDefined();
+		const res = await proxyToRust(req, "/api/events/collect");
+		expect(res.status).toBe(204);
 	});
 
 	it("validates Consent Mode v2 default signal encoding", () => {
