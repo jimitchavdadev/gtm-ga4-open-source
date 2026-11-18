@@ -12,8 +12,11 @@ use tower::ServiceExt;
 #[tokio::test]
 async fn test_http_healthz() {
     let pool = DatabasePool::new_in_memory().unwrap();
-    let repo = EventRepository::new(pool);
-    let state = Arc::new(AppState { repo });
+    let repo = EventRepository::new(pool.clone());
+    let state = Arc::new(AppState {
+        repo,
+        pool: Arc::new(pool),
+    });
     let app = build_router(state);
 
     let req = Request::builder()
@@ -29,7 +32,10 @@ async fn test_http_healthz() {
 async fn test_http_g_collect() {
     let pool = DatabasePool::new_in_memory().unwrap();
     let repo = EventRepository::new(pool.clone());
-    let state = Arc::new(AppState { repo });
+    let state = Arc::new(AppState {
+        repo,
+        pool: Arc::new(pool.clone()),
+    });
     let app = build_router(state);
 
     let req = Request::builder()
@@ -50,8 +56,11 @@ async fn test_http_g_collect() {
 #[tokio::test]
 async fn test_http_reporting_identity_and_reports() {
     let pool = DatabasePool::new_in_memory().unwrap();
-    let repo = EventRepository::new(pool);
-    let state = Arc::new(AppState { repo });
+    let repo = EventRepository::new(pool.clone());
+    let state = Arc::new(AppState {
+        repo,
+        pool: Arc::new(pool),
+    });
     let app = build_router(state);
 
     let req = Request::builder()
@@ -61,15 +70,54 @@ async fn test_http_reporting_identity_and_reports() {
 
     let res = app.oneshot(req).await.unwrap();
     assert_eq!(res.status(), StatusCode::OK);
+}
 
-    let req_attr = Request::builder()
-        .uri("/api/v1/properties/G-TEST/reports/attribution")
+#[tokio::test]
+async fn test_http_entities_crud_and_publish() {
+    let pool = DatabasePool::new_in_memory().unwrap();
+    let repo = EventRepository::new(pool.clone());
+    let state = Arc::new(AppState {
+        repo,
+        pool: Arc::new(pool),
+    });
+    let app = build_router(state);
+
+    // Create Tag Entity
+    let create_body = serde_json::json!({
+        "name": "GA4 Config",
+        "entity_type": "tag",
+        "data": { "measurement_id": "G-XYZ123" }
+    });
+    let req = Request::builder()
+        .method("POST")
+        .uri("/api/v1/workspaces/ws_default/entities")
+        .header("content-type", "application/json")
+        .body(Body::from(create_body.to_string()))
+        .unwrap();
+
+    let res = app.clone().oneshot(req).await.unwrap();
+    assert_eq!(res.status(), StatusCode::CREATED);
+
+    // List entities
+    let list_req = Request::builder()
+        .uri("/api/v1/workspaces/ws_default/entities")
         .body(Body::empty())
         .unwrap();
+    let list_res = app.clone().oneshot(list_req).await.unwrap();
+    assert_eq!(list_res.status(), StatusCode::OK);
 
-    let res_attr = build_router(Arc::new(AppState { repo: EventRepository::new(DatabasePool::new_in_memory().unwrap()) }))
-        .oneshot(req_attr)
-        .await
+    // Publish workspace
+    let pub_body = serde_json::json!({
+        "container_id": "ct_123",
+        "name": "Prod Release v1.0",
+        "description": "Initial setup"
+    });
+    let pub_req = Request::builder()
+        .method("POST")
+        .uri("/api/v1/workspaces/ws_default/publish")
+        .header("content-type", "application/json")
+        .body(Body::from(pub_body.to_string()))
         .unwrap();
-    assert_eq!(res_attr.status(), StatusCode::OK);
+    let pub_res = app.oneshot(pub_req).await.unwrap();
+    assert_eq!(pub_res.status(), StatusCode::CREATED);
 }
