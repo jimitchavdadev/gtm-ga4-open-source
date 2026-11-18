@@ -8,6 +8,7 @@ interface OverviewTabProps {
 	variablesCount: number;
 	versions: any[];
 	onPublish: (name: string, desc: string) => Promise<void>;
+	onOpenDiagnostics?: () => void;
 }
 
 export function OverviewTab({
@@ -16,6 +17,7 @@ export function OverviewTab({
 	variablesCount,
 	versions,
 	onPublish,
+	onOpenDiagnostics,
 }: OverviewTabProps) {
 	const [isModalOpen, setIsModalOpen] = useState(false);
 	const [verName, setVerName] = useState(`Release v${versions.length + 1}`);
@@ -41,13 +43,24 @@ export function OverviewTab({
 							Active container workspace with unsubmitted configurations
 						</p>
 					</div>
-					<button
-						type="button"
-						onClick={() => setIsModalOpen(true)}
-						className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-700"
-					>
-						Publish to Live
-					</button>
+					<div className="flex items-center gap-3">
+						{onOpenDiagnostics && (
+							<button
+								type="button"
+								onClick={onOpenDiagnostics}
+								className="rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-xs hover:bg-gray-50"
+							>
+								🔍 Tag Diagnostics
+							</button>
+						)}
+						<button
+							type="button"
+							onClick={() => setIsModalOpen(true)}
+							className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-blue-700"
+						>
+							Publish to Live
+						</button>
+					</div>
 				</div>
 
 				<div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-3">

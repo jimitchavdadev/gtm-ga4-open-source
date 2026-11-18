@@ -3,6 +3,7 @@ use crate::attribution::last_click::LastClickAttribution;
 use crate::attribution::markov::MarkovAttribution;
 use crate::attribution::shapley::ShapleyAttribution;
 use crate::attribution::types::{Journey, Touchpoint};
+use crate::db::sea::SeaEventRepo;
 use crate::explorations::freeform::FreeFormEngine;
 use crate::explorations::funnel::{FunnelExplorationEngine, FunnelStepConfig};
 use crate::explorations::path::PathExplorationEngine;
@@ -19,7 +20,9 @@ pub async fn handle_realtime(
     State(state): State<Arc<AppState>>,
     Path(property_id): Path<String>,
 ) -> impl IntoResponse {
-    let recent = state.repo.get_recent_events(&property_id, 20).unwrap_or_default();
+    let recent = SeaEventRepo::get_recent_events(&state.sea_db, &property_id, 20)
+        .await
+        .unwrap_or_default();
     let user_count = recent.iter().map(|e| &e.client_id).collect::<std::collections::HashSet<_>>().len();
 
     Json(json!({

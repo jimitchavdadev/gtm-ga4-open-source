@@ -1,5 +1,6 @@
 use analytics_engine::db::event_repo::EventRepository;
 use analytics_engine::db::pool::DatabasePool;
+use analytics_engine::db::sea::connect_sea_database;
 use analytics_engine::server::handlers_collect::AppState;
 use analytics_engine::server::routes::build_router;
 use axum::{
@@ -9,14 +10,21 @@ use axum::{
 use std::sync::Arc;
 use tower::ServiceExt;
 
-#[tokio::test]
-async fn test_http_healthz() {
+async fn create_test_state() -> (Arc<AppState>, DatabasePool) {
     let pool = DatabasePool::new_in_memory().unwrap();
     let repo = EventRepository::new(pool.clone());
+    let sea_db = connect_sea_database("sqlite::memory:").await.unwrap();
     let state = Arc::new(AppState {
         repo,
-        pool: Arc::new(pool),
+        pool: Arc::new(pool.clone()),
+        sea_db,
     });
+    (state, pool)
+}
+
+#[tokio::test]
+async fn test_http_healthz() {
+    let (state, _) = create_test_state().await;
     let app = build_router(state);
 
     let req = Request::builder()
@@ -30,12 +38,7 @@ async fn test_http_healthz() {
 
 #[tokio::test]
 async fn test_http_g_collect() {
-    let pool = DatabasePool::new_in_memory().unwrap();
-    let repo = EventRepository::new(pool.clone());
-    let state = Arc::new(AppState {
-        repo,
-        pool: Arc::new(pool.clone()),
-    });
+    let (state, pool) = create_test_state().await;
     let app = build_router(state);
 
     let req = Request::builder()
@@ -55,12 +58,7 @@ async fn test_http_g_collect() {
 
 #[tokio::test]
 async fn test_http_reporting_identity_and_reports() {
-    let pool = DatabasePool::new_in_memory().unwrap();
-    let repo = EventRepository::new(pool.clone());
-    let state = Arc::new(AppState {
-        repo,
-        pool: Arc::new(pool),
-    });
+    let (state, _) = create_test_state().await;
     let app = build_router(state);
 
     let req = Request::builder()
@@ -74,12 +72,7 @@ async fn test_http_reporting_identity_and_reports() {
 
 #[tokio::test]
 async fn test_http_entities_crud_and_publish() {
-    let pool = DatabasePool::new_in_memory().unwrap();
-    let repo = EventRepository::new(pool.clone());
-    let state = Arc::new(AppState {
-        repo,
-        pool: Arc::new(pool),
-    });
+    let (state, _) = create_test_state().await;
     let app = build_router(state);
 
     // Create Tag Entity

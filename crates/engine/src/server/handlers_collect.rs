@@ -20,6 +20,7 @@ use std::sync::Arc;
 pub struct AppState {
     pub repo: EventRepository,
     pub pool: Arc<DbPool>,
+    pub sea_db: sea_orm::DatabaseConnection,
 }
 
 fn extract_payload_string(body: &Bytes, params: &HashMap<String, String>) -> String {

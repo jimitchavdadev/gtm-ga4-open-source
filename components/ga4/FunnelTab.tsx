@@ -1,7 +1,13 @@
 "use client";
 
-export function FunnelTab() {
-	const funnelSteps = [
+interface FunnelTabProps {
+	funnelData?: {
+		steps?: { name: string; users: number; pct: number; dropPct: number }[];
+	};
+}
+
+export function FunnelTab({ funnelData }: FunnelTabProps = {}) {
+	const funnelSteps = funnelData?.steps || [
 		{
 			name: "1. View Item (Product Details)",
 			users: 1000,

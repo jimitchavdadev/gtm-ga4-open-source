@@ -123,4 +123,14 @@ CREATE TABLE IF NOT EXISTS sessions (
   traffic_source_json TEXT,
   FOREIGN KEY (property_id) REFERENCES ga4_properties(id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS annotations (
+  id TEXT PRIMARY KEY,
+  property_id TEXT NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT NOT NULL,
+  date TEXT NOT NULL,
+  color TEXT NOT NULL,
+  created_at INTEGER NOT NULL
+);
 `;

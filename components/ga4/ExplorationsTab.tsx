@@ -18,7 +18,13 @@ type Technique =
 	| "LIFETIME"
 	| "USER_EXPLORER";
 
-export function ExplorationsTab() {
+interface ExplorationsTabProps {
+	runExploration?: (technique: string) => Promise<any>;
+}
+
+export function ExplorationsTab({
+	runExploration: _runExploration,
+}: ExplorationsTabProps = {}) {
 	const [activeTechnique, setActiveTechnique] = useState<Technique>("FREEFORM");
 
 	const techniques: { id: Technique; label: string; icon: string }[] = [

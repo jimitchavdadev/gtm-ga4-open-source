@@ -1,13 +1,7 @@
-import { entityRepo } from "@/src/db/instance";
-
-const corsHeaders = {
-	"Access-Control-Allow-Origin": "*",
-	"Access-Control-Allow-Methods": "PUT, DELETE, OPTIONS",
-	"Access-Control-Allow-Headers": "Content-Type",
-};
+import { proxyToRust } from "@/src/server/rust-proxy";
 
 export async function OPTIONS() {
-	return new Response(null, { status: 204, headers: corsHeaders });
+	return proxyToRust(new Request("http://localhost", { method: "OPTIONS" }));
 }
 
 export async function PUT(
@@ -15,20 +9,13 @@ export async function PUT(
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
-	const body = (await req.json().catch(() => null)) as any;
-	const ok = entityRepo.updateEntity(id, {
-		name: body?.name,
-		data_json: body?.data ? JSON.stringify(body.data) : undefined,
-		fingerprint: Math.random().toString(36).substring(2, 10),
-	});
-	return Response.json({ success: ok }, { headers: corsHeaders });
+	return proxyToRust(req, `/api/v1/entities/${id}`);
 }
 
 export async function DELETE(
-	_req: Request,
+	req: Request,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
-	const ok = entityRepo.deleteEntity(id);
-	return Response.json({ success: ok }, { headers: corsHeaders });
+	return proxyToRust(req, `/api/v1/entities/${id}`);
 }

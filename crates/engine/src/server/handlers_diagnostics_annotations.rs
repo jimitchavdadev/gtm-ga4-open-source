@@ -1,6 +1,6 @@
 use super::handlers_collect::AppState;
-use crate::db::EntityRepository;
-use crate::ga4::AnnotationsManager;
+use crate::db::sea::{SeaAnnotationRepo, SeaEntityRepo};
+use crate::ga4::{Annotation, AnnotationsManager};
 use crate::gtm::TagDiagnosticsEngine;
 use axum::{
     extract::{Path, State},
@@ -23,8 +23,7 @@ pub async fn list_annotations(
     State(state): State<Arc<AppState>>,
     Path(property_id): Path<String>,
 ) -> impl IntoResponse {
-    let repo = EntityRepository::new(state.pool.conn.clone());
-    match repo.get_annotations(&property_id) {
+    match SeaAnnotationRepo::list_annotations(&state.sea_db, &property_id).await {
         Ok(list) => Json(serde_json::to_value(list).unwrap()).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -39,8 +38,9 @@ pub async fn create_annotation(
     Path(property_id): Path<String>,
     Json(payload): Json<CreateAnnotationPayload>,
 ) -> impl IntoResponse {
-    let repo = EntityRepository::new(state.pool.conn.clone());
-    let current_list = repo.get_annotations(&property_id).unwrap_or_default();
+    let current_list = SeaAnnotationRepo::list_annotations(&state.sea_db, &property_id)
+        .await
+        .unwrap_or_default();
 
     if let Err(err) = AnnotationsManager::validate_annotation(
         &payload.title,
@@ -56,15 +56,17 @@ pub async fn create_annotation(
 
     let id = format!("ann_{}", chrono::Utc::now().timestamp_millis());
     let color = payload.color.unwrap_or_else(|| "#1a73e8".to_string());
+    let annotation = Annotation {
+        id,
+        property_id,
+        title: payload.title,
+        description: payload.description,
+        date: payload.date,
+        color,
+        created_at: chrono::Utc::now().timestamp_millis(),
+    };
 
-    match repo.create_annotation(
-        &id,
-        &property_id,
-        &payload.title,
-        &payload.description,
-        &payload.date,
-        &color,
-    ) {
+    match SeaAnnotationRepo::create_annotation(&state.sea_db, annotation).await {
         Ok(ann) => (StatusCode::CREATED, Json(serde_json::to_value(ann).unwrap())).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -78,8 +80,7 @@ pub async fn delete_annotation(
     State(state): State<Arc<AppState>>,
     Path(id): Path<String>,
 ) -> impl IntoResponse {
-    let repo = EntityRepository::new(state.pool.conn.clone());
-    match repo.delete_annotation(&id) {
+    match SeaAnnotationRepo::delete_annotation(&state.sea_db, &id).await {
         Ok(deleted) => Json(serde_json::json!({ "success": deleted })).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -93,8 +94,9 @@ pub async fn get_tag_diagnostics(
     State(state): State<Arc<AppState>>,
     Path(container_id): Path<String>,
 ) -> impl IntoResponse {
-    let repo = EntityRepository::new(state.pool.conn.clone());
-    let entities = repo.get_entities(&container_id, None).unwrap_or_default();
+    let entities = SeaEntityRepo::get_entities(&state.sea_db, &container_id, None)
+        .await
+        .unwrap_or_default();
 
     let has_config = entities.iter().any(|e| {
         e.entity_type == "tag" && e.data_json.contains("GA4 Configuration")

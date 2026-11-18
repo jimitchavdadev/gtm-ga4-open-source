@@ -1,6 +1,7 @@
 import { DatabaseManager } from "./connection";
 import { EntityRepository } from "./entity-repository";
 import { EventRepository } from "./event-repository";
+import { eq, orm, schema } from "./orm-client";
 import { AnalyticsRepository } from "./repository";
 
 // Global singleton instance for Next.js server runtime
@@ -21,7 +22,12 @@ export const eventRepo = new EventRepository(db);
 export const entityRepo = new EntityRepository(db);
 
 export function seedDefaults() {
-	const hasAcc = db.prepare("SELECT 1 FROM accounts WHERE id = 'acc_1'").get();
+	const q = orm
+		.select()
+		.from(schema.accounts)
+		.where(eq(schema.accounts.id, "acc_1"))
+		.toSQL();
+	const hasAcc = db.prepare(q.sql).get(...(q.params as any[]));
 	if (!hasAcc) {
 		const now = Date.now();
 		db.exec(`
@@ -39,6 +45,22 @@ export function seedDefaults() {
 
       INSERT OR IGNORE INTO ga4_data_streams (id, property_id, stream_type, display_name, measurement_id, api_secret, config_json, created_at)
       VALUES ('stream_1', 'prop_1', 'WEB', 'Web Data Stream', 'G-TESTSTREAM', 'sec_123', '{}', ${now});
+
+      CREATE TABLE IF NOT EXISTS annotations (
+        id TEXT PRIMARY KEY,
+        property_id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        description TEXT NOT NULL,
+        date TEXT NOT NULL,
+        color TEXT NOT NULL,
+        created_at INTEGER NOT NULL
+      );
+
+      INSERT OR IGNORE INTO annotations (id, property_id, title, description, date, color, created_at)
+      VALUES 
+        ('ann_1', 'prop_1', 'Black Friday Sale 2026', 'Annual site-wide 30% discount promo launched.', '2026-11-20', '#188038', ${now}),
+        ('ann_2', 'prop_1', 'Cart Checkout Service Outage', 'Upstream payment gateway timeout incident for 42 minutes.', '2026-11-14', '#d93025', ${now}),
+        ('ann_3', 'prop_1', 'Redesigned Product Detail Page', 'Frontend migration to Next.js Turbopack template.', '2026-11-05', '#1a73e8', ${now});
     `);
 	}
 }

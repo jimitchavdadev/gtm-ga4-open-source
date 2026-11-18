@@ -5,7 +5,11 @@ import { CustomDefinitionsTable } from "./admin/CustomDefinitionsTable";
 import { ReportingIdentitySection } from "./admin/ReportingIdentitySection";
 import { SubpropertiesTable } from "./admin/SubpropertiesTable";
 
-export function AdminTab() {
+export function AdminTab({
+	reportingIdentity,
+}: {
+	reportingIdentity?: any;
+} = {}) {
 	const [emailRedaction, setEmailRedaction] = useState(true);
 
 	return (
@@ -21,7 +25,7 @@ export function AdminTab() {
 			</div>
 
 			{/* Reporting Identity Settings */}
-			<ReportingIdentitySection />
+			<ReportingIdentitySection initialMode={reportingIdentity?.mode} />
 
 			{/* Data Streams */}
 			<div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">

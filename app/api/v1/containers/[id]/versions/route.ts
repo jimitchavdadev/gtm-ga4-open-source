@@ -1,20 +1,13 @@
-import { entityRepo } from "@/src/db/instance";
-
-const corsHeaders = {
-	"Access-Control-Allow-Origin": "*",
-	"Access-Control-Allow-Methods": "GET, OPTIONS",
-	"Access-Control-Allow-Headers": "Content-Type",
-};
+import { proxyToRust } from "@/src/server/rust-proxy";
 
 export async function OPTIONS() {
-	return new Response(null, { status: 204, headers: corsHeaders });
+	return proxyToRust(new Request("http://localhost", { method: "OPTIONS" }));
 }
 
 export async function GET(
-	_req: Request,
+	req: Request,
 	{ params }: { params: Promise<{ id: string }> },
 ) {
 	const { id } = await params;
-	const versions = entityRepo.getVersions(id);
-	return Response.json(versions, { headers: corsHeaders });
+	return proxyToRust(req, `/api/v1/containers/${id}/versions`);
 }

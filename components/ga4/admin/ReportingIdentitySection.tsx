@@ -4,8 +4,12 @@ import { useState } from "react";
 
 type IdentityMode = "BLENDED" | "OBSERVED" | "DEVICE_BASED";
 
-export function ReportingIdentitySection() {
-	const [mode, setMode] = useState<IdentityMode>("BLENDED");
+export function ReportingIdentitySection({
+	initialMode,
+}: {
+	initialMode?: IdentityMode;
+} = {}) {
+	const [mode, setMode] = useState<IdentityMode>(initialMode || "BLENDED");
 
 	return (
 		<div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">

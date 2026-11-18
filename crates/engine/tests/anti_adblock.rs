@@ -89,9 +89,11 @@ fn test_transport_resilience_custom_endpoint() {
 async fn test_http_custom_and_cloaked_endpoints() {
     let pool = DatabasePool::new_in_memory().unwrap();
     let repo = EventRepository::new(pool.clone());
+    let sea_db = analytics_engine::db::sea::connect_sea_database("sqlite::memory:").await.unwrap();
     let state = Arc::new(AppState {
         repo,
         pool: Arc::new(pool.clone()),
+        sea_db,
     });
     let app = build_router(state);
 

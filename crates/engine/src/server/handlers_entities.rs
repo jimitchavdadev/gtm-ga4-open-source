@@ -1,5 +1,5 @@
 use super::handlers_collect::AppState;
-use crate::db::{EntityRepository, GtmEntity};
+use crate::db::sea::{container_entities, SeaEntityRepo};
 use axum::{
     extract::{Path, Query, State},
     http::StatusCode,
@@ -41,8 +41,7 @@ pub async fn list_entities(
     Path(workspace_id): Path<String>,
     Query(query): Query<EntityQuery>,
 ) -> impl IntoResponse {
-    let repo = EntityRepository::new(state.pool.conn.clone());
-    match repo.get_entities(&workspace_id, query.entity_type.as_deref()) {
+    match SeaEntityRepo::get_entities(&state.sea_db, &workspace_id, query.entity_type.as_deref()).await {
         Ok(entities) => Json(serde_json::to_value(entities).unwrap()).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -57,10 +56,9 @@ pub async fn create_entity(
     Path(workspace_id): Path<String>,
     Json(payload): Json<CreateEntityPayload>,
 ) -> impl IntoResponse {
-    let repo = EntityRepository::new(state.pool.conn.clone());
     let id = format!("ent_{}_{}", chrono::Utc::now().timestamp_millis(), &uuid_token(6));
     let fingerprint = uuid_token(8);
-    let entity = GtmEntity {
+    let model = container_entities::Model {
         id,
         workspace_id,
         entity_type: payload.entity_type,
@@ -69,8 +67,8 @@ pub async fn create_entity(
         fingerprint,
     };
 
-    match repo.create_entity(&entity) {
-        Ok(_) => (StatusCode::CREATED, Json(serde_json::to_value(entity).unwrap())).into_response(),
+    match SeaEntityRepo::create_entity(&state.sea_db, model).await {
+        Ok(entity) => (StatusCode::CREATED, Json(serde_json::to_value(entity).unwrap())).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(serde_json::json!({ "error": e.to_string() })),
@@ -84,12 +82,14 @@ pub async fn update_entity(
     Path(id): Path<String>,
     Json(payload): Json<UpdateEntityPayload>,
 ) -> impl IntoResponse {
-    let repo = EntityRepository::new(state.pool.conn.clone());
     let data_str = payload.data.as_ref().map(|d| d.to_string());
-    let fingerprint = uuid_token(8);
-
-    match repo.update_entity(&id, payload.name.as_deref(), data_str.as_deref(), &fingerprint) {
-        Ok(updated) => Json(serde_json::json!({ "success": updated })).into_response(),
+    match SeaEntityRepo::update_entity(&state.sea_db, &id, payload.name, data_str).await {
+        Ok(Some(updated)) => Json(serde_json::to_value(updated).unwrap()).into_response(),
+        Ok(None) => (
+            StatusCode::NOT_FOUND,
+            Json(serde_json::json!({ "error": "Entity not found" })),
+        )
+            .into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
             Json(serde_json::json!({ "error": e.to_string() })),
@@ -102,8 +102,7 @@ pub async fn delete_entity(
     State(state): State<Arc<AppState>>,
     Path(id): Path<String>,
 ) -> impl IntoResponse {
-    let repo = EntityRepository::new(state.pool.conn.clone());
-    match repo.delete_entity(&id) {
+    match SeaEntityRepo::delete_entity(&state.sea_db, &id).await {
         Ok(deleted) => Json(serde_json::json!({ "success": deleted })).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -118,32 +117,18 @@ pub async fn publish_workspace(
     Path(workspace_id): Path<String>,
     Json(payload): Json<PublishPayload>,
 ) -> impl IntoResponse {
-    let repo = EntityRepository::new(state.pool.conn.clone());
-    let entities = match repo.get_entities(&workspace_id, None) {
-        Ok(list) => list,
-        Err(e) => {
-            return (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                Json(serde_json::json!({ "error": e.to_string() })),
-            )
-                .into_response()
-        }
-    };
-
-    let container_id = payload.container_id.unwrap_or_else(|| "default_container".to_string());
-    let name = payload
+    let version_name = payload
         .name
         .unwrap_or_else(|| format!("Version {}", chrono::Utc::now().timestamp_millis()));
-    let version_id = format!("ver_{}", chrono::Utc::now().timestamp_millis());
-    let entities_json = serde_json::to_string(&entities).unwrap_or_else(|_| "[]".to_string());
 
-    match repo.create_version(
-        &version_id,
-        &container_id,
-        &name,
-        payload.description.as_deref(),
-        &entities_json,
-    ) {
+    match SeaEntityRepo::publish_workspace(
+        &state.sea_db,
+        &workspace_id,
+        &version_name,
+        payload.description,
+    )
+    .await
+    {
         Ok(ver) => (StatusCode::CREATED, Json(serde_json::to_value(ver).unwrap())).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -157,8 +142,7 @@ pub async fn list_versions(
     State(state): State<Arc<AppState>>,
     Path(container_id): Path<String>,
 ) -> impl IntoResponse {
-    let repo = EntityRepository::new(state.pool.conn.clone());
-    match repo.get_versions(&container_id) {
+    match SeaEntityRepo::list_versions(&state.sea_db, &container_id).await {
         Ok(versions) => Json(serde_json::to_value(versions).unwrap()).into_response(),
         Err(e) => (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -169,8 +153,9 @@ pub async fn list_versions(
 }
 
 fn uuid_token(len: usize) -> String {
-    use sha2::{Digest, Sha256};
-    let seed = format!("{}_{}", chrono::Utc::now().timestamp_nanos_opt().unwrap_or(0), len);
-    let hash = format!("{:x}", Sha256::digest(seed.as_bytes()));
-    hash[..len].to_string()
+    use rand::Rng;
+    let mut rng = rand::thread_rng();
+    (0..len)
+        .map(|_| format!("{:x}", rng.gen_range(0..16)))
+        .collect()
 }

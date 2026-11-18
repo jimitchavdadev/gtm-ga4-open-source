@@ -13,9 +13,11 @@ use tower::ServiceExt;
 async fn setup_app() -> (axum::Router, DatabasePool) {
     let pool = DatabasePool::new_in_memory().unwrap();
     let repo = EventRepository::new(pool.clone());
+    let sea_db = analytics_engine::db::sea::connect_sea_database("sqlite::memory:").await.unwrap();
     let state = Arc::new(AppState {
         repo,
         pool: Arc::new(pool.clone()),
+        sea_db,
     });
     (build_router(state), pool)
 }

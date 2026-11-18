@@ -65,8 +65,12 @@ const SAMPLE_ROWS: BigQueryRow[] = [
 	},
 ];
 
-export function BigQueryExportTab() {
-	const [rows] = useState<BigQueryRow[]>(SAMPLE_ROWS);
+export function BigQueryExportTab({
+	rows: propRows,
+}: {
+	rows?: BigQueryRow[];
+} = {}) {
+	const rows = propRows && propRows.length > 0 ? propRows : SAMPLE_ROWS;
 	const [filter, setFilter] = useState("");
 
 	const filtered = rows.filter(

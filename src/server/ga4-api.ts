@@ -1,4 +1,5 @@
 import type { SqliteDatabase } from "../db/connection";
+import { eq, orm, schema } from "../db/orm-client";
 import { AttributionEngine } from "../ga4/attribution";
 
 export async function handleGa4Api(
@@ -13,9 +14,12 @@ export async function handleGa4Api(
 	);
 	if (standardMatch?.[1] && req.method === "GET") {
 		const propId = standardMatch[1];
-		const events = db
-			.prepare("SELECT * FROM raw_events WHERE property_id = ?")
-			.all(propId) as any[];
+		const q = orm
+			.select()
+			.from(schema.rawEvents)
+			.where(eq(schema.rawEvents.propertyId, propId))
+			.toSQL();
+		const events = db.prepare(q.sql).all(...(q.params as any[])) as any[];
 
 		const uniqueUsers = new Set(events.map((e) => e.client_id)).size;
 		const uniqueSessions = new Set(events.map((e) => e.session_id)).size;
@@ -135,9 +139,12 @@ export async function handleGa4Api(
 	);
 	if (funnelMatch?.[1] && req.method === "GET") {
 		const propId = funnelMatch[1];
-		const events = db
-			.prepare("SELECT * FROM raw_events WHERE property_id = ?")
-			.all(propId) as any[];
+		const q = orm
+			.select()
+			.from(schema.rawEvents)
+			.where(eq(schema.rawEvents.propertyId, propId))
+			.toSQL();
+		const events = db.prepare(q.sql).all(...(q.params as any[])) as any[];
 
 		const steps = [
 			{ name: "View Item", event: "view_item" },

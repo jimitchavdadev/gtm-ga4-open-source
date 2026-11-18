@@ -1,5 +1,6 @@
 use analytics_engine::db::event_repo::EventRepository;
 use analytics_engine::db::pool::DatabasePool;
+use analytics_engine::db::sea::connect_sea_database;
 use analytics_engine::server::handlers_collect::AppState;
 use analytics_engine::server::routes::build_router;
 use std::net::SocketAddr;
@@ -10,11 +11,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt::init();
 
     let db_path = std::env::var("DATABASE_PATH").unwrap_or_else(|_| "analytics.db".to_string());
+    let sea_url = if db_path == ":memory:" {
+        "sqlite::memory:".to_string()
+    } else if db_path.starts_with("sqlite:") || db_path.starts_with("postgres:") || db_path.starts_with("mysql:") {
+        db_path.clone()
+    } else {
+        format!("sqlite://{}?mode=rwc", db_path)
+    };
+
+    let sea_db = connect_sea_database(&sea_url).await?;
     let pool = DatabasePool::new_file(&db_path)?;
     let repo = EventRepository::new(pool.clone());
     let state = Arc::new(AppState {
         repo,
         pool: Arc::new(pool),
+        sea_db,
     });
 
     let app = build_router(state);

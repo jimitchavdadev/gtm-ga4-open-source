@@ -15,6 +15,7 @@ import { CustomTemplatesTab } from "@/components/gtm/CustomTemplatesTab";
 import { EnterpriseTab } from "@/components/gtm/EnterpriseTab";
 import { OverviewTab as GtmOverview } from "@/components/gtm/OverviewTab";
 import { PreviewTab } from "@/components/gtm/PreviewTab";
+import { TagDiagnosticsModal } from "@/components/gtm/TagDiagnosticsModal";
 import { TagsTab } from "@/components/gtm/TagsTab";
 import { TriggersTab } from "@/components/gtm/TriggersTab";
 import { VariablesTab } from "@/components/gtm/VariablesTab";
@@ -29,6 +30,7 @@ export default function DashboardPage() {
 	const [propertyId] = useState("prop_1");
 	const [workspaceId] = useState("ws_default");
 	const [previewActive, setPreviewActive] = useState(false);
+	const [diagnosticsOpen, setDiagnosticsOpen] = useState(false);
 	const [toast, setToast] = useState<string | null>(null);
 
 	const showToast = (msg: string) => {
@@ -76,6 +78,7 @@ export default function DashboardPage() {
 							variablesCount={data.variables.length}
 							versions={data.versions}
 							onPublish={data.publishWorkspace}
+							onOpenDiagnostics={() => setDiagnosticsOpen(true)}
 						/>
 					)}
 					{platform === "GTM" && activeTab === "TAGS" && (
@@ -129,22 +132,36 @@ export default function DashboardPage() {
 					)}
 					{platform === "GA4" && activeTab === "REPORTS" && <ReportsTab />}
 					{platform === "GA4" && activeTab === "EXPLORATIONS" && (
-						<ExplorationsTab />
+						<ExplorationsTab runExploration={data.runExploration} />
 					)}
 					{platform === "GA4" && activeTab === "ATTRIBUTION" && (
 						<AttributionTab attributionData={data.attributionData} />
 					)}
-					{platform === "GA4" && activeTab === "FUNNEL" && <FunnelTab />}
+					{platform === "GA4" && activeTab === "FUNNEL" && (
+						<FunnelTab funnelData={data.funnelData} />
+					)}
 					{platform === "GA4" && activeTab === "AUDIENCES" && <AudiencesTab />}
 					{platform === "GA4" && activeTab === "ANNOTATIONS" && (
-						<AnnotationsTab />
+						<AnnotationsTab
+							annotations={data.annotations}
+							onCreateAnnotation={data.createAnnotation}
+							onDeleteAnnotation={data.deleteAnnotation}
+						/>
 					)}
 					{platform === "GA4" && activeTab === "BIGQUERY" && (
-						<BigQueryExportTab />
+						<BigQueryExportTab rows={data.bigQueryRows} />
 					)}
-					{platform === "GA4" && activeTab === "ADMIN" && <AdminTab />}
+					{platform === "GA4" && activeTab === "ADMIN" && (
+						<AdminTab reportingIdentity={data.reportingIdentity} />
+					)}
 				</main>
 			</div>
+
+			<TagDiagnosticsModal
+				isOpen={diagnosticsOpen}
+				onClose={() => setDiagnosticsOpen(false)}
+				tagsCount={data.tags.length}
+			/>
 
 			{toast && (
 				<div className="fixed bottom-6 right-6 z-50 rounded-lg bg-gray-900 px-4 py-3 text-sm text-white shadow-lg animate-bounce">
