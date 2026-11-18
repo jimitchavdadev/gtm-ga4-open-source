@@ -1,0 +1,36 @@
+{
+  "manifest_version": 3,
+  "name": "OpenAnalytics Debugger & Tag Assistant",
+  "version": "1.0.0",
+  "description": "Comprehensive open-source debugger for Google Tag Manager, GA4, and first-party telemetry.",
+  "devtools_page": "devtools.html",
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "OpenAnalytics Debugger"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "permissions": [
+    "webRequest",
+    "storage",
+    "tabs",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["injected.js"],
+      "matches": ["<all_urls>"]
+    }
+  ]
+}

@@ -1,5 +1,7 @@
 use super::handlers_collect::{
-    handle_debug_mp_collect, handle_g_collect, handle_mp_collect, AppState,
+    handle_cloaked_collect, handle_cloaked_ingest, handle_custom_ingest,
+    handle_debug_mp_collect, handle_g_collect, handle_mp_collect, handle_pixel_gif,
+    AppState,
 };
 use super::handlers_diagnostics_annotations::{
     create_annotation, delete_annotation, get_tag_diagnostics, list_annotations,
@@ -30,6 +32,23 @@ pub fn build_router(state: Arc<AppState>) -> Router {
     Router::new()
         .route("/healthz", get(healthz))
         .route("/g/collect", post(handle_g_collect).get(handle_g_collect))
+        .route(
+            "/api/v1/telemetry",
+            post(handle_custom_ingest).get(handle_custom_ingest),
+        )
+        .route(
+            "/api/v1/events",
+            post(handle_custom_ingest).get(handle_custom_ingest),
+        )
+        .route(
+            "/_trk/{token}/collect",
+            post(handle_cloaked_collect).get(handle_cloaked_collect),
+        )
+        .route(
+            "/_trk/{token}/{action}",
+            post(handle_cloaked_ingest).get(handle_cloaked_ingest),
+        )
+        .route("/_trk/pixel.gif", get(handle_pixel_gif))
         .route("/mp/collect", post(handle_mp_collect))
         .route("/debug/mp/collect", post(handle_debug_mp_collect))
         .route(

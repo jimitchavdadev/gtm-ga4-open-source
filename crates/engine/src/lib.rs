@@ -1,3 +1,4 @@
+pub mod anti_adblock;
 pub mod attribution;
 pub mod consent;
 pub mod crypto;
