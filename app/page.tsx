@@ -4,6 +4,7 @@ import { useState } from "react";
 import { AdminTab } from "@/components/ga4/AdminTab";
 import { AttributionTab } from "@/components/ga4/AttributionTab";
 import { AudiencesTab } from "@/components/ga4/AudiencesTab";
+import { ExplorationsTab } from "@/components/ga4/ExplorationsTab";
 import { FunnelTab } from "@/components/ga4/FunnelTab";
 import { OverviewTab as Ga4Overview } from "@/components/ga4/OverviewTab";
 import { RealtimeTab } from "@/components/ga4/RealtimeTab";
@@ -121,6 +122,9 @@ export default function DashboardPage() {
 						/>
 					)}
 					{platform === "GA4" && activeTab === "REPORTS" && <ReportsTab />}
+					{platform === "GA4" && activeTab === "EXPLORATIONS" && (
+						<ExplorationsTab />
+					)}
 					{platform === "GA4" && activeTab === "ATTRIBUTION" && (
 						<AttributionTab attributionData={data.attributionData} />
 					)}

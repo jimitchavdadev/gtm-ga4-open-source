@@ -6,6 +6,7 @@ out
 dist
 *.tgz
 .next
+target
 
 # code coverage
 coverage

@@ -20,6 +20,7 @@ export function Sidebar({ platform, activeTab, onTabChange }: SidebarProps) {
 		{ id: "OVERVIEW", label: "Home Dashboard", icon: "🏠" },
 		{ id: "REALTIME", label: "Realtime", icon: "🔴" },
 		{ id: "REPORTS", label: "Reports", icon: "📈" },
+		{ id: "EXPLORATIONS", label: "Explorations Suite", icon: "🔬" },
 		{ id: "ATTRIBUTION", label: "Attribution (DDA)", icon: "🎯" },
 		{ id: "FUNNEL", label: "Funnel Explore", icon: "📉" },
 		{ id: "AUDIENCES", label: "Audiences & ML", icon: "👥" },

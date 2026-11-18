@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { CustomDefinitionsTable } from "./admin/CustomDefinitionsTable";
+import { ReportingIdentitySection } from "./admin/ReportingIdentitySection";
 import { SubpropertiesTable } from "./admin/SubpropertiesTable";
 
 export function AdminTab() {
@@ -14,10 +15,13 @@ export function AdminTab() {
 					Property Settings & Administration
 				</h2>
 				<p className="mt-1 text-sm text-gray-500">
-					Manage data streams, custom dimensions, privacy controls, and 360
-					subproperties
+					Manage data streams, reporting identity, custom dimensions, privacy
+					controls, and 360 subproperties
 				</p>
 			</div>
+
+			{/* Reporting Identity Settings */}
+			<ReportingIdentitySection />
 
 			{/* Data Streams */}
 			<div className="rounded-xl border border-gray-200 bg-white p-6 shadow-xs">
