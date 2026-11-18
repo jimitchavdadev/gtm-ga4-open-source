@@ -6,7 +6,8 @@ use super::handlers_entities::{
 };
 use super::handlers_identity::handle_get_identity_mode;
 use super::handlers_reports::{
-    handle_attribution_report, handle_exploration_report, handle_funnel_report, handle_realtime,
+    handle_attribution_report, handle_bigquery_export, handle_exploration_report,
+    handle_funnel_report, handle_realtime,
 };
 use axum::{
     http::StatusCode,
@@ -60,6 +61,10 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .route(
             "/api/v1/properties/{id}/reports/explorations/{technique}",
             get(handle_exploration_report),
+        )
+        .route(
+            "/api/v1/properties/{id}/export/bigquery",
+            get(handle_bigquery_export),
         )
         .layer(cors)
         .with_state(state)
