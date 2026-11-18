@@ -1,6 +1,9 @@
 use super::handlers_collect::{
     handle_debug_mp_collect, handle_g_collect, handle_mp_collect, AppState,
 };
+use super::handlers_diagnostics_annotations::{
+    create_annotation, delete_annotation, get_tag_diagnostics, list_annotations,
+};
 use super::handlers_entities::{
     create_entity, delete_entity, list_entities, list_versions, publish_workspace, update_entity,
 };
@@ -46,6 +49,10 @@ pub fn build_router(state: Arc<AppState>) -> Router {
             get(list_versions),
         )
         .route(
+            "/api/v1/containers/{id}/diagnostics",
+            get(get_tag_diagnostics),
+        )
+        .route(
             "/api/v1/properties/{id}/identity",
             get(handle_get_identity_mode),
         )
@@ -65,6 +72,14 @@ pub fn build_router(state: Arc<AppState>) -> Router {
         .route(
             "/api/v1/properties/{id}/export/bigquery",
             get(handle_bigquery_export),
+        )
+        .route(
+            "/api/v1/properties/{id}/annotations",
+            get(list_annotations).post(create_annotation),
+        )
+        .route(
+            "/api/v1/annotations/{id}",
+            axum::routing::delete(delete_annotation),
         )
         .layer(cors)
         .with_state(state)

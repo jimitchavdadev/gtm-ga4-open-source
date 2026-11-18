@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AdminTab } from "@/components/ga4/AdminTab";
+import { AnnotationsTab } from "@/components/ga4/AnnotationsTab";
 import { AttributionTab } from "@/components/ga4/AttributionTab";
 import { AudiencesTab } from "@/components/ga4/AudiencesTab";
 import { BigQueryExportTab } from "@/components/ga4/BigQueryExportTab";
@@ -135,6 +136,9 @@ export default function DashboardPage() {
 					)}
 					{platform === "GA4" && activeTab === "FUNNEL" && <FunnelTab />}
 					{platform === "GA4" && activeTab === "AUDIENCES" && <AudiencesTab />}
+					{platform === "GA4" && activeTab === "ANNOTATIONS" && (
+						<AnnotationsTab />
+					)}
 					{platform === "GA4" && activeTab === "BIGQUERY" && (
 						<BigQueryExportTab />
 					)}

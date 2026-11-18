@@ -25,6 +25,7 @@ export function Sidebar({ platform, activeTab, onTabChange }: SidebarProps) {
 		{ id: "ATTRIBUTION", label: "Attribution (DDA)", icon: "🎯" },
 		{ id: "FUNNEL", label: "Funnel Explore", icon: "📉" },
 		{ id: "AUDIENCES", label: "Audiences & ML", icon: "👥" },
+		{ id: "ANNOTATIONS", label: "Annotations", icon: "📝" },
 		{ id: "BIGQUERY", label: "BigQuery Export", icon: "🗄️" },
 		{ id: "ADMIN", label: "Admin & Settings", icon: "⚙️" },
 	];
